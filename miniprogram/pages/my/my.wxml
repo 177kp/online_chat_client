@@ -1,0 +1,24 @@
+<!--index.wxml-->
+<view class="container">
+  <div class="top-nav">
+    <span>我</span>
+  </div>
+  <view class="my-info">
+      <image src="{{currentUser.head_img}}" />
+      <span>{{currentUser.name}}</span>
+  </view>
+  <div class="side-tab">
+    <navigator class="st-item" url="/pages/index/index">
+        <view><image src="/img/session-b.png" /></view>
+        <span >聊天</span>
+    </navigator>
+    <navigator class="st-item" url="/pages/contact/contact" >
+        <view><image src="/img/contact-b.png" /></view>
+        <span >联系人</span>
+    </navigator>
+    <navigator class="st-item  tab-active" url="/pages/my/my"  >
+        <view><image src="/img/my-g.png" /></view>
+        <span style="color:#3CAF36">我</span>
+    </navigator>
+  </div>
+</view>

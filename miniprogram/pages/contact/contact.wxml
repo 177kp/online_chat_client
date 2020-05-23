@@ -1,0 +1,33 @@
+<!--index.wxml-->
+<view class="container">
+  <div class="top-nav">
+    <span>联系人</span>
+  </div>
+  <view class="list" style="padding-bottom:270rpx">
+      <ul class="contacts">
+          <li wx:for="{{contacts}}" wx:key="key" bindtap="joinSession" data-to-id="{{item.to_id}}" data-chat-type="{{item.chat_type}}">
+              <div class="cols-2">
+                  <image class="avatar" src="{{fileHost}}{{item.head_img}}" />
+              </div>
+              <div class="cols-8">
+                  <span class="name">{{item.name}}</span>
+              </div>
+              <div style="clear:both"></div>
+          </li>
+      </ul>
+  </view>
+  <div class="side-tab">
+    <navigator class="st-item" url="/pages/index/index">
+        <view><image src="/img/session-b.png" /></view>
+        <span >聊天</span>
+    </navigator>
+    <navigator class="st-item" url="/pages/contact/contact" >
+        <view><image src="/img/contact-g.png" /></view>
+        <span style="color:#3CAF36">联系人</span>
+    </navigator>
+    <navigator class="st-item  tab-active" url="/pages/my/my"  >
+        <view><image src="/img/my-b.png" /></view>
+        <span>我</span>
+    </navigator>
+  </div>
+</view>

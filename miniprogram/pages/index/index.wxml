@@ -1,0 +1,46 @@
+<!--index.wxml-->
+<view class="container">
+  <div class="top-nav">
+    <span>online chat({{sessions.length}})</span>
+  </div>
+  <view class="list">
+      <ul class="sessions">
+          <navigator wx:for="{{sessions}}" wx:key="key" url="/pages/chat/chat?to_id={{item.to_id}}&chat_type={{item.chat_type}}" >
+            <li>
+                <div class="cols-2">
+                    <view><image class="avatar" src="{{fileHost}}{{item.head_img}}" /></view> 
+                </div>
+                <div class="cols-8 name-div" >
+                  <p class="name">{{item.name}}</p>
+                  <p class="last-msg" wx:if="{{item.lastMessage.msg_type==0}}">{{item.lastMessage.msg}}</p>
+                  <p class="last-msg" wx:if="{{item.lastMessage.msg_type==1}}">[图片]</p>
+                  <p class="last-msg" wx:if="{{item.lastMessage.msg_type==2}}">[音频]</p>
+                  <p class="last-msg" wx:if="{{item.lastMessage.msg_type==3}}">[视频]</p>
+                 <p class="last-msg" wx:if="{{item.lastMessage.msg_type==4}}">
+                    <rich-text nodes="{{item.lastMessage.msg}}"></rich-text>
+                  </p>
+                  <p class="last-msg" wx:if="{{item.lastMessage.msg_type==5}}">[文件]</p>
+                </div>
+                <span  class="last-msg-time">
+                {{item.lastMessage.ctimeFormat}}
+                </span>
+                <div style="clear:both;width:100%;"></div>
+            </li>
+          </navigator>
+      </ul>
+  </view>
+  <view class="side-tab">
+    <navigator class="st-item" url="/pages/index/index">
+        <view><image src="/img/session-g.png" /></view>
+        <span style="color:#3CAF36">聊天</span>
+    </navigator>
+    <navigator class="st-item" url="/pages/contact/contact" >
+        <view><image src="/img/contact-b.png" /></view>
+        <span>联系人</span>
+    </navigator>
+    <navigator class="st-item  tab-active" url="/pages/my/my"  >
+        <view><image src="/img/my-b.png" /></view>
+        <span>我</span>
+    </navigator>
+  </view>
+</view>

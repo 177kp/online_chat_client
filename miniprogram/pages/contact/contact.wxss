@@ -1,0 +1,44 @@
+/* pages/contact/contact.wxss */
+.contacts li {
+  display:inline-block;
+  width:750rpx;
+  cursor: pointer;
+  transition: background-color .1s;
+  position:relative;
+  vertical-align: middle;
+  height:103rpx
+}
+.contacts .cols-2{
+  width:127rpx;
+  height:100%;
+  display:inline-block;
+  vertical-align: middle;
+}
+.contacts .cols-8{
+  right:26rpx;
+  left:127rpx;
+  position:absolute;
+  height:100%;
+  display:inline-block;
+  border-bottom: 2rpx solid #f4f4f4;
+  vertical-align: middle;
+}
+.contacts .avatar {
+  border-radius: 7.5rpx;
+  width:75rpx;
+  height:75rpx;
+  border:2rpx #eee solid;
+  display:inline-block;
+  margin-left:26rpx;
+  margin-top:13.5rpx;
+}
+.contacts .name {
+  overflow: hidden;
+  width:375rpx;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+  margin-left:22.5rpx;
+  height:750rpx;
+  display:inline-block;
+  line-height:103rpx;
+}

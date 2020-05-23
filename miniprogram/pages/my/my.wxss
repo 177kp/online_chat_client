@@ -1,0 +1,19 @@
+/* pages/my/my.wxss */
+.my-info image{
+  width:225rpx;
+  height:225rpx;
+  border-radius: 112.5rpx;
+  position:absolute;
+  left:262.5rpx;
+  top:150rpx;
+  display:block;
+}
+.my-info span{
+  position:absolute;
+  width:750rpx;
+  top:405rpx;
+  left:0;
+  font-size:75rpx;
+  text-align:center;
+  display:block;
+}

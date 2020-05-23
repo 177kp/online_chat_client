@@ -1,0 +1,71 @@
+/**index.wxss**/
+.list{
+  margin-top:20rpx;
+  display:block;
+}
+.sessions li {
+    cursor: pointer;
+    transition: background-color .1s;
+    position:relative;
+    height:140rpx;
+    width:750rpx;
+    display:block;
+}
+.sessions li:hover{
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.sessions li.active{
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sessions .avatar {
+    border-radius: 7.5rpx;
+    width:100rpx;
+    height:100rpx;
+    border:2rpx #eee solid;
+    margin-top:22rpx;
+    margin-left:30rpx
+}
+.sessions .name {
+    display: inline-block;
+    overflow: hidden;
+    width:375rpx;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+    line-height:45rpx;
+}
+.sessions .last-msg{
+    overflow: hidden;
+    text-overflow:ellipsis;
+    color:#6b6f7c;
+    width:450rpx;
+    line-height:45rpx;
+    display:block;
+    height:45rpx;
+}
+.sessions .last-msg rich-text{
+    overflow: hidden;
+    height:45rpx;
+}
+.sessions .last-msg-time{
+    position:absolute;
+    right:32rpx;
+    color:#6b6f7c;
+    line-height:45rpx; 
+}
+.sessions li div{
+    display:inline-block;
+    vertical-align: top;
+    padding:0;
+}
+.sessions .cols-2{
+    width:150rpx;
+}
+.sessions .cols-8{
+    right:30rpx;
+    left:150rpx;
+    position:absolute;
+    border-bottom:2rpx #e5e0e1 solid;
+    height:90rpx;
+    padding:22rpx 0;
+}
