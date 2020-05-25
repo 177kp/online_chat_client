@@ -365,9 +365,6 @@
                 url: self.httpApiHost + "/index.php/online_chat/chat/doLogin",
                 type: "POST",
                 data: data,
-                headers:{
-                    token:sessionStorage.getItem('online_chat_phpsessid')
-                },
                 success:function(data){
                     data = $.parseJSON(data);
                     sessionStorage.setItem(`online_chat_phpsessid`,data.data.PHPSESSID);
@@ -458,7 +455,7 @@
                 type: "POST",
                 data: myform,
                 headers:{
-                    token:sessionStorage.getItem('online_chat_phpsessid')
+                    token:sessionStorage.getItem('online_chat_phpsessid') == null ? '' : sessionStorage.getItem('online_chat_phpsessid')
                 },
                 contentType: false,
                 processData: false,
@@ -507,6 +504,9 @@
                 data = {};
             }
             var token = sessionStorage.getItem('online_chat_phpsessid');
+            if( token == null ){
+                token = '';
+            }
             $.ajax({
                 type:'GET',
                 url:url,
