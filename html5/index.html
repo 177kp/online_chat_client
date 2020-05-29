@@ -67,7 +67,8 @@ img{
             <input type="input" name="name" value="" />
         </div>
         <div class="form-item">
-            <span class="button" onclick="doLogin()">登录</span>
+            <span class="button" onclick="doLogin('')">登录</span>
+            <span class="button" onclick="doLogin('mobile')" style="margin-top:20px">登录到移动端</span>
             <input type="hidden" name="head_img" value="" />
             <input type="hidden" name="user_type" value="0" />
         </div>
@@ -88,9 +89,13 @@ img{
     $('input[name=name]').val(name);
     $('input[name=head_img]').val( head_img );
     $('img').attr('src',head_img);
-    function doLogin(){
+    function doLogin(type){
         onlineChat.httpApi.doLogin($('form').serialize(),function(data){
             if( data.code == 200 ){
+                if( type == 'mobile' ){
+                    window.location.href='mobile.html';
+                    return;
+                }
                 if( data.data.is_mobile == '0' ){
                     window.location.href='pc.html';
                 }else{
