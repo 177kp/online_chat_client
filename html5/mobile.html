@@ -222,12 +222,14 @@
 
     //实例化sdk
     var onlineChat = new online_chat_js_sdk({
-        httpApiHost:'',
+        httpApiHost:'http://chat.local.com',
         noLoginJumpUrl:'index.html',
         alertMsg:function(msg){
             layer.msg(msg);
         }
     });
+    onlineChat.httpApi.getSessions();
+    onlineChat.httpApi.getContacts();
     //获取访问websocket服务的token
     onlineChat.start();
     //聊天会话列表组件
@@ -250,7 +252,11 @@
                         msg = '[文件]';
                     }
                     if( message.uid != onlineChat.userinfo.uid ){
-                        return '[<span class="send-user">'+message.name+'</span>]：' + msg;
+                        if( message.msg_type == onlineChat.MSG_TYPE_RICH_TXT ){
+                            return '<p>[' + message.name + ']:' + msg.substr(3);
+                        }else{
+                            return '[<span>'+message.name+'</span>]：' + msg;
+                        }
                     }else{
                         return msg;
                     }

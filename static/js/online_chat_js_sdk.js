@@ -74,8 +74,8 @@
         this.socketClient = new socketClient();
         //订阅发布模式中订阅者
         this.subscriber = new subscriber();
-        this.httpApi.getSessions();
-        this.httpApi.getContacts();
+        //this.httpApi.getSessions();
+        //this.httpApi.getContacts();
     }
     online_chat_js_sdk.prototype = {
         constructor:online_chat_js_sdk,
@@ -126,7 +126,7 @@
             }else{
                 return;
             }
-            this.httpApi.getMessages(self.session['to_id'],self.session['chat_type']);
+            onlineChat.httpApi.getMessages(self.session['to_id'],self.session['chat_type']);
         },
         //移动端加载聊天页面
         beforeLoadChatPage:function beforeLoadChatPage(session){
@@ -400,6 +400,9 @@
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/joinSession',{chat_type:chat_type,to_id:to_id},function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
+                if( chat_type == 1 ){
+                    onlineChat.httpApi.getMessages(to_id,chat_type);
+                }
             });
         },
         //获取所有聊天会话
