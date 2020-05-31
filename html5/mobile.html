@@ -170,7 +170,7 @@
                                             <div class="mf-right">
                                                 <p class="mf-filename">{{item.msg.filename}}</p>
                                                 <p class="mf-detail">
-                                                    <span class="mf-size">{{$store.state.onlineChat.helper.getFileDownloadUrl.formatFilesize(item.msg.filesize)}}</span>
+                                                    <span class="mf-size">{{$store.state.onlineChat.helper.formatFilesize(item.msg.filesize)}}</span>
                                                     <span class="mf-download"><a :href="$store.state.onlineChat.helper.getFileDownloadUrl(item.msg.path,item.msg.filename)" target="_bank" style="color:#35ac2f;text-decoration: none">下载</a></span>
                                                 </p>
                                             </div>
