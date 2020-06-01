@@ -17,6 +17,7 @@ App({
     wx.login({
       success: loginRes => {
         onlineChat.httpApi.wxMiniProgramLogin(loginRes.code,userinfo.nickname,userinfo.avatarUrl,function(){
+          that.globalData.header.token = wx.getStorageSync("token");
           onlineChat.httpApi.getAccessToken(function(){
             onlineChat.httpApi.getSessions();
             onlineChat.httpApi.getContacts();
@@ -50,7 +51,7 @@ App({
     fileHost:'',
     header:{
       'content-type':'application/x-www-form-urlencoded',
-      'cookie': wx.getStorageSync("token")
+      'token': ''
     },
     currentUser: wx.getStorageSync('currentUser')
   }

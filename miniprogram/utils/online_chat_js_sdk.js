@@ -382,10 +382,10 @@ httpApi.prototype = {
           'content-type': 'application/json' // 默认值
         },
         success(data) {
-          //console.log(data.cookies[0].split(';')[0]);
+          //console.log(data);
           if( data.data.code == 200 ){
+            wx.setStorageSync("token", data.data.data.PHPSESSID);
             cb();
-            wx.setStorageSync("token", data.cookies[0].split(';')[0]);
           }else{
             console.log('login failed');
           }
