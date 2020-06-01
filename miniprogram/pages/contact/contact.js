@@ -17,9 +17,9 @@ Page({
     var app = getApp();
     var that = this;
     var timer = setInterval(function(){
-      if( app.globalData.contacts !== null ){
+      if( onlineChat.contacts !== null ){
         that.setData({
-          contacts:app.globalData.contacts
+          contacts:onlineChat.contacts
         });
         clearInterval(timer);
         //console.log(app.globalData.contacts);
@@ -29,44 +29,19 @@ Page({
   joinSession(res){
     var chat_type = res.currentTarget.dataset.chatType;
     var to_id = res.currentTarget.dataset.toId;
-    var app = getApp();
-    var that = this;
-    var sessions = app.globalData.sessions;
-    var contacts = app.globalData.contacts;
+    var sessions = onlineChat.sessions;
+    var contacts = onlineChat.contacts;
     for( var i=0;i<contacts.length;i++ ){
       if( contacts[i].to_id==to_id && contacts[i].chat_type == chat_type ){
         var contact = contacts[i];
         break;
       }
     }
-    for (var i = 0; i < sessions.length; i++) {
-        if (contact.chat_type == sessions[i].chat_type &&
-            contact.to_id == sessions[i].to_id) {
-            var session = app.globalData.sessions.splice(i, 1)[0];
-            app.globalData.sessions.unshift(session);
-            wx.navigateTo({
-              url: '/pages/chat/chat?to_id='+session.to_id+'&chat_type='+session.chat_type　　// 页面 B
-            });
-            return;
-        }
-    }
-    app.globalData.sessions.unshift({
-        chat_type: contact.chat_type,
-        head_img: contact.head_img,
-        lastMessage: null,
-        messages: [],
-        name: contact.name,
-        to_id: contact.to_id,
-        uid: app.globalData.currentUser.uid
+    onlineChat.joinSession(i,function(session){
+      wx.navigateTo({
+        url: '/pages/chat/chat?to_id='+session.to_id+'&chat_type='+session.chat_type　　// 页面 B
+      });
     });
-    session = sessions[0];
-    wx.navigateTo({
-      url: '/pages/chat/chat?to_id='+session.to_id+'&chat_type='+session.chat_type　　// 页面 B
-    });
-    onlineChat.joinSession(contact.chat_type,contact.to_id,function(data){
-
-    });
-
   },
   /**
    * 生命周期函数--监听页面初次渲染完成

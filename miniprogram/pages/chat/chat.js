@@ -117,9 +117,9 @@ Page({
       faceImgs
     });
     var timer = setInterval(function(){
-      if( app.globalData.currentUser != null ){
+      if( onlineChat.currentUser != null ){
         that.setData({
-          currentUser:app.globalData.currentUser
+          currentUser:onlineChat.currentUser
         });
         clearInterval(timer);
       }
@@ -127,21 +127,21 @@ Page({
     var currentPage = getCurrentPages().pop();
     //console.log(currentPage.options);
     setInterval(function(){
-      for( var i=0;i<app.globalData.sessions.length;i++ ){
-        if( app.globalData.sessions[i].to_id == currentPage.options.to_id && app.globalData.sessions[i].chat_type == currentPage.options.chat_type ){
+      for( var i=0;i<onlineChat.sessions.length;i++ ){
+        if( onlineChat.sessions[i].to_id == currentPage.options.to_id && onlineChat.sessions[i].chat_type == currentPage.options.chat_type ){
           if( that.data.session == null ){
-            that.data.session = app.globalData.sessions[i];
-            that.getMessages(app.globalData.sessions[i]);
-            app.globalData.sessions[i].newMessage = false;
+            that.data.session = onlineChat.sessions[i];
+            that.getMessages(onlineChat.sessions[i]);
+            onlineChat.sessions[i].newMessage = false;
             setTimeout(function(){
               that.chatMessageScrollBottom();
             },200);
-          }else if( app.globalData.sessions[i].newMessage == true ){
-            //console.log(app.globalData.sessions[i]);
+          }else if( onlineChat.sessions[i].newMessage == true ){
+            //console.log(onlineChat.sessions[i]);
             that.setData({
-              session:app.globalData.sessions[i]
+              session:onlineChat.sessions[i]
             });
-            app.globalData.sessions[i].newMessage = false;
+            onlineChat.sessions[i].newMessage = false;
             that.chatMessageScrollBottom();
           }
         }
@@ -150,14 +150,14 @@ Page({
   },
   getMessages(session){
     var that = this;
-    onlineChat.getMessages(session.to_id,session.chat_type,function(data){
-        session.messages = data.data;
+    onlineChat.httpApi.getMessages(session.to_id,session.chat_type,function(data){
+        session.messages = data;
         for( var j=0;j<session.messages.length;j++ ){
           if( typeof session.messages[j].ctimeFormat == 'undefined' ){
-            session.messages[j].ctimeFormat = onlineChat.messageFormatTime(session.messages[j].ctime*1000);
+            session.messages[j].ctimeFormat = onlineChat.helper.messageFormatTime(session.messages[j].ctime*1000);
           }
         }
-        //console.log(session);
+        console.log(session);
         that.setData({
           session:session
         });
@@ -182,7 +182,7 @@ Page({
             return;
         }
         //console.log(that.data.session);
-        onlineChat.sendMessage({
+        onlineChat.socketClient.sendMessage({
             chat_type:that.data.session.chat_type,
             to_id:that.data.session.to_id,
             msg:message,
@@ -238,7 +238,7 @@ Page({
     const recorderManager = wx.getRecorderManager()
 
     recorderManager.onStop((res) => {
-      onlineChat.uploadFile(res.tempFilePath,that.data.session.to_id,that.data.session.chat_type);
+      onlineChat.httpApi.uploadFile(res.tempFilePath,that.data.session.to_id,that.data.session.chat_type);
     })
 
     const options = {
@@ -267,7 +267,7 @@ Page({
       success (res) {
         // tempFilePath可以作为img标签的src属性显示图片
          for( var i=0;i<res.tempFilePaths.length;i++ ){
-           onlineChat.uploadFile(res.tempFilePaths[i],that.data.session.to_id,that.data.session.chat_type);
+           onlineChat.httpApi.uploadFile(res.tempFilePaths[i],that.data.session.to_id,that.data.session.chat_type);
          }
       }
     });
@@ -282,7 +282,7 @@ Page({
       success (res) {
         // tempFilePath可以作为img标签的src属性显示图片
          for( var i=0;i<res.tempFilePaths.length;i++ ){
-           onlineChat.uploadFile(res.tempFilePaths[i],that.data.session.to_id,that.data.session.chat_type);
+           onlineChat.httpApi.uploadFile(res.tempFilePaths[i],that.data.session.to_id,that.data.session.chat_type);
          }
          
       }
@@ -296,7 +296,7 @@ Page({
       maxDuration: 60,
       camera: 'back',
       success(res) {
-        onlineChat.uploadFile(res.tempFilePath,that.data.session.to_id,that.data.session.chat_type);
+        onlineChat.httpApi.uploadFile(res.tempFilePath,that.data.session.to_id,that.data.session.chat_type);
         
       }
     });

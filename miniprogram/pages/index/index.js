@@ -7,24 +7,21 @@ Page({
     sessions:[],
     fileHost:getApp().globalData.fileHost
   },
-  test:function(){
-    console.log(1);
-  },
   onLoad: function () {
     var app = getApp();
     var that = this;
     var timer = setInterval(function(){
-      if( that.data.sessions.length != app.globalData.sessions.length || app.globalData.newMessage == true ){
-        for( var i=0;i<app.globalData.sessions.length;i++ ){
-          if( app.globalData.sessions[i].lastMessage != null &&   typeof app.globalData.sessions[i].lastMessage.ctime != 'undefined' && typeof app.globalData.sessions[i].lastMessage.ctimeFormat == 'undefined' ){
-            app.globalData.sessions[i].lastMessage.ctimeFormat = onlineChat.sessionFormatTime(app.globalData.sessions[i].lastMessage.ctime*1000);
+      if( that.data.sessions.length != onlineChat.sessions.length || app.globalData.newMessage == true ){
+        for( var i=0;i<onlineChat.sessions.length;i++ ){
+          if( onlineChat.sessions[i].lastMessage != null &&   typeof onlineChat.sessions[i].lastMessage.ctime != 'undefined' && typeof onlineChat.sessions[i].lastMessage.ctimeFormat == 'undefined' ){
+            onlineChat.sessions[i].lastMessage.ctimeFormat = onlineChat.helper.sessionFormatTime(onlineChat.sessions[i].lastMessage.ctime*1000);
           }
         }
         that.setData({
-          sessions:app.globalData.sessions
+          sessions:onlineChat.sessions
         });
         app.globalData.newMessage = false;
       }
-    },100);
+    },500);
   }
 })

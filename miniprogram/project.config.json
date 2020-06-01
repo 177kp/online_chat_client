@@ -26,8 +26,8 @@
 	},
 	"compileType": "miniprogram",
 	"libVersion": "2.8.3",
-	"appid": "touristappid",
-	"projectname": "test",
+	"appid": "wxecf5b6067eb155ee",
+	"projectname": "miniprogram",
 	"debugOptions": {
 		"hidedInDevtools": []
 	},
