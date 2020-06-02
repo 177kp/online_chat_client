@@ -17,7 +17,6 @@ Page({
     chatMessageBottom:'108rpx',
     chatInputModel:'txt',
     recording:false,
-    fileHost:getApp().globalData.fileHost,
     videoSrc:''
   },
   showFace(event){
@@ -69,7 +68,7 @@ Page({
     this.editorCtx.blur()
   },
   insertFaceImg:function(event){
-    var imgSrc = this.data.fileHost + '/static'+event.currentTarget.dataset.faceImg;
+    var imgSrc = onlineChat.fileHost + '/static'+event.currentTarget.dataset.faceImg;
     const that = this;
     this.editorCtx.getContents({
       success:function(res){
@@ -117,13 +116,13 @@ Page({
       faceImgs
     });
     var timer = setInterval(function(){
-      if( onlineChat.currentUser != null ){
+      if( onlineChat.userinfo != null ){
         that.setData({
-          currentUser:onlineChat.currentUser
+          currentUser:onlineChat.userinfo
         });
         clearInterval(timer);
       }
-    },100);
+    },500);
     var currentPage = getCurrentPages().pop();
     //console.log(currentPage.options);
     setInterval(function(){

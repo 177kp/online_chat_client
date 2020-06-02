@@ -1,0 +1,12 @@
+<!--index.wxml-->
+<view class="container">
+  <div class="top-nav">
+    <span>online_chat示例</span>
+  </div>
+  <view class="welcome-txt">
+    ttltChat（online_chat）是用 PHP 写的在线聊天软件。引入 online_chat 简单、方便；online_chat 服务端结构由 server 服务程序和 web 的 api 组成；server 服务程序用原生 PHP 编写，也用到了 thinkphp 框架的异常处理；web 的 api 部分用的是 thinkphp。
+  </view>
+  <view>
+    <button type="primary" id="gotoChat" class="gotoChat" bindtap="gotoChat">立刻去体验</button>
+  </view>
+</view>

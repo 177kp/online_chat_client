@@ -7,7 +7,7 @@
       <ul class="contacts">
           <li wx:for="{{contacts}}" wx:key="key" bindtap="joinSession" data-to-id="{{item.to_id}}" data-chat-type="{{item.chat_type}}">
               <div class="cols-2">
-                  <image class="avatar" src="{{fileHost}}{{item.head_img}}" />
+                  <image class="avatar" src="{{item.head_img}}" />
               </div>
               <div class="cols-8">
                   <span class="name">{{item.name}}</span>

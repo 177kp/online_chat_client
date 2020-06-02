@@ -1,7 +1,7 @@
 <!--index.wxml-->
 <view class="container">
   <div class="top-nav">
-    <span>online chat({{sessions.length}})</span>
+    <span>会话({{sessions.length}})</span>
   </div>
   <view class="list">
       <ul class="sessions">

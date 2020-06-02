@@ -1,0 +1,13 @@
+/* pages/welcome/welcome.wxss */
+.welcome-txt{
+  padding:25rpx;
+  text-indent: 60rpx;
+  line-height:60rpx;
+}
+.gotoChat{
+  height:80rpx;
+  width:700rpx;
+  line-height:80rpx;
+  padding:0;
+  margin-top:40rpx;
+}

@@ -11,26 +11,21 @@ function online_chat_js_sdk(config){
         head_img:""
     };
     //提示消息方法
-    if( typeof config.alertMsg == 'function' ){
-        this.alertMsg = config.alertMsg;
-    }else{
-        this.alertMsg = function(msg){
-            console.log(msg);
-        };
-    }
+    this.alertMsg = function(msg){
+        console.log(msg);
+    };
     //主机地址
     if( typeof config.httpApiHost == 'undefined' ){
         this.alertMsg('config.httpApiHost未定义！');
         throw 'config.httpApiHost未定义！';
     }
     this.httpApiHost = config.httpApiHost;
-
-    //未登陆跳转的地址
-    if( typeof config.noLoginJumpUrl == 'undefined' ){
-        this.noLoginJumpUrl = 'index.html';
-    }else{
-        this.noLoginJumpUrl = config.noLoginJumpUrl;
+    //文件地址
+    if( typeof config.fileHost == 'undefined' ){
+        this.alertMsg('config.fileHost未定义！');
+        throw 'config.fileHost未定义！';
     }
+    this.fileHost = config.fileHost;
     //调试，true-开启调试，false关闭调试
     if( typeof config.debug == 'undefined' ){
         this.debug = true;
@@ -183,7 +178,7 @@ socketClient.prototype = {
         if( self.ws_addr == null || self.ws_addr == '' ){
             throw 'websocket的host地址不能为空！';
         }
-        //console.log(self.ws_addr);
+        console.log(self.ws_addr);
         this.socket = wx.connectSocket({
           url:self.ws_addr
         }); 
@@ -295,7 +290,6 @@ subscriber.prototype = {
         for( var i=0;i<self.sessions.length;i++ ){
             if( self.sessions[i].to_id == msg.uid ){
                 self.sessions[i].online = 1;
-                $("audio")[0].play();
             }
         }
     },
@@ -630,8 +624,7 @@ function formatNumber(n) {
 }
 
 module.exports = new online_chat_js_sdk({
-  'httpApiHost':'http://192.168.1.100',
-  'host':'192.168.1.100',
-  'port':2080,
-  'login_url':''
+  'httpApiHost':'',
+  'fileHost':'', //表情图片会用到
+  'debug':true
 });

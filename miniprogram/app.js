@@ -16,7 +16,8 @@ App({
     var that = this;
     wx.login({
       success: loginRes => {
-        onlineChat.httpApi.wxMiniProgramLogin(loginRes.code,userinfo.nickname,userinfo.avatarUrl,function(){
+        //console.log(userinfo);
+        onlineChat.httpApi.wxMiniProgramLogin(loginRes.code,userinfo.nickName,userinfo.avatarUrl,function(){
           that.globalData.header.token = wx.getStorageSync("token");
           onlineChat.httpApi.getAccessToken(function(){
             onlineChat.httpApi.getSessions();
@@ -48,7 +49,6 @@ App({
     sessions:[],
     contacts:null,
     newMessage:false,
-    fileHost:'',
     header:{
       'content-type':'application/x-www-form-urlencoded',
       'token': ''

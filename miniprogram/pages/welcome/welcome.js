@@ -1,31 +1,22 @@
-// pages/my/my.js
-var onlineChat = require( '../../utils/online_chat_js_sdk.js' );
+// pages/welcome/welcome.js
 Page({
 
   /**
    * 页面的初始数据
    */
   data: {
-      currentUser:null,
-      fileHost:onlineChat.fileHost
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    var app = getApp();
-    var that = this;
-    var timer = setInterval(function(){
-      if( app.globalData.currentUser !=null ){
-        that.setData({
-          currentUser:app.globalData.currentUser
-        });
-        clearInterval(timer);
-      }
-    },100);
   },
-
+  gotoChat:function(){
+    wx.navigateTo({
+      url: '/pages/index/index'
+    });
+  },
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
