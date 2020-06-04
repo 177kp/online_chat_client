@@ -1,0 +1,70 @@
+/**app.wxss**/
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding-top:150rpx;
+  font-size:37.5rpx
+} 
+.top-nav{
+  background:#fff;
+  z-index:99999;
+  text-align:left;
+  display:block;
+  width:750rpx;
+  box-sizing:border-box;
+  padding-left:25rpx;
+  position:fixed;
+  top:0;
+  height:150rpx;
+}
+.top-nav span{
+  position:absolute;
+  bottom:0;
+  line-height:75rpx;
+  font-size:35rpx;
+}
+.top-nav-goback{
+  width:35rpx
+}
+div,p,li,ul{
+  display:block;
+} 
+.clear{
+  clear:both;
+  display:block;
+  width:100%;
+}
+.side-tab{
+    width:100%;
+    position: fixed;
+    bottom:0;
+    background:#f7f7f7;
+    height:135rpx;
+    border-top:2rpx #ccc solid;
+}
+.st-item{
+    text-align:center;
+    display:inline-block;
+    height:100%;
+    width:100%;
+    line-height:40rpx;
+}
+.st-item,.st-item:hover,.st-item:active{
+    color:black;
+}
+.side-tab image{
+    display:inline-block;
+    margin-top:15rpx;
+    width:60rpx;
+    height:60rpx;
+    cursor:pointer
+}
+.side-tab .st-item{
+    width:250rpx;
+    display:block;
+    float:left
+}

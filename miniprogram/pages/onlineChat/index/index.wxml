@@ -5,7 +5,7 @@
   </div>
   <view class="list">
       <ul class="sessions">
-          <navigator wx:for="{{sessions}}" wx:key="key" url="/pages/chat/chat?to_id={{item.to_id}}&chat_type={{item.chat_type}}" >
+          <navigator wx:for="{{sessions}}" wx:key="key" url="/pages/onlineChat/chat/chat?to_id={{item.to_id}}&chat_type={{item.chat_type}}" >
             <li>
                 <div class="cols-2">
                     <view><image class="avatar" src="{{fileHost}}{{item.head_img}}" /></view> 
@@ -30,16 +30,16 @@
       </ul>
   </view>
   <view class="side-tab">
-    <navigator class="st-item" url="/pages/index/index">
-        <view><image src="/img/session-g.png" /></view>
+    <navigator class="st-item" url="/pages/onlineChat/index/index">
+        <view><image src="../img/session-g.png" /></view>
         <span style="color:#3CAF36">聊天</span>
     </navigator>
-    <navigator class="st-item" url="/pages/contact/contact" >
-        <view><image src="/img/contact-b.png" /></view>
+    <navigator class="st-item" url="/pages/onlineChat/contact/contact" >
+        <view><image src="../img/contact-b.png" /></view>
         <span>联系人</span>
     </navigator>
-    <navigator class="st-item  tab-active" url="/pages/my/my"  >
-        <view><image src="/img/my-b.png" /></view>
+    <navigator class="st-item  tab-active" url="/pages/onlineChat/my/my"  >
+        <view><image src="../img/my-b.png" /></view>
         <span>我</span>
     </navigator>
   </view>

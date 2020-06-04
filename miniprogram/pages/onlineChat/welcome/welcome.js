@@ -14,7 +14,7 @@ Page({
   },
   gotoChat:function(){
     wx.navigateTo({
-      url: '/pages/index/index'
+      url: '/pages/onlineChat/index/index'
     });
   },
   /**

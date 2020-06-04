@@ -1,5 +1,5 @@
 // pages/contact/contact.js
-var onlineChat = require('../../utils/online_chat_js_sdk.js');
+var onlineChat = require('../utils/online_chat_js_sdk.js');
 Page({
 
   /**
@@ -38,7 +38,7 @@ Page({
     }
     onlineChat.joinSession(i,function(session){
       wx.navigateTo({
-        url: '/pages/chat/chat?to_id='+session.to_id+'&chat_type='+session.chat_type　　// 页面 B
+        url: '/pages/onlineChat/chat/chat?to_id='+session.to_id+'&chat_type='+session.chat_type　　// 页面 B
       });
     });
   },

@@ -352,7 +352,7 @@ subscriber.prototype = {
             session = self.sessions.pop();
         }
         session.newMessage = true;
-        getApp().globalData.newMessage = true;
+        getApp().globalData.onlineChat.newMessage = true;
         self.sessions.unshift(session);
     }
 }
@@ -500,7 +500,10 @@ httpApi.prototype = {
           url:url, 
           method:"get",
           data: data,
-          header:getApp().globalData.header,
+          header:{
+            'content-type':'application/x-www-form-urlencoded',
+            'token': wx.getStorageSync("token")
+          },
           success(data) {
               cb(data.data);
           }
@@ -624,7 +627,7 @@ function formatNumber(n) {
 }
 
 module.exports = new online_chat_js_sdk({
-  'httpApiHost':'',
-  'fileHost':'', //表情图片会用到
+  'httpApiHost':'https://chat.blogts.com',
+  'fileHost':'https://chat.blogts.com', //表情图片会用到
   'debug':true
 });

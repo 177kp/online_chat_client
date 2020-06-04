@@ -1,5 +1,5 @@
 // pages/chat/chat.js
-var onlineChat = require('../../utils/online_chat_js_sdk.js');
+var onlineChat = require('../utils/online_chat_js_sdk.js');
 Page({
 
   /**
@@ -68,7 +68,7 @@ Page({
     this.editorCtx.blur()
   },
   insertFaceImg:function(event){
-    var imgSrc = onlineChat.fileHost + '/static'+event.currentTarget.dataset.faceImg;
+    var imgSrc = onlineChat.fileHost + '/static'+event.currentTarget.dataset.faceImg.substr(2);
     const that = this;
     this.editorCtx.getContents({
       success:function(res){
@@ -110,7 +110,7 @@ Page({
     var that = this;
     var faceImgs = [];
     for( var i=1;i<73;i++){
-      faceImgs.push('/img/face/'+i+'.png');
+      faceImgs.push('../img/face/'+i+'.png');
     }
     this.setData({
       faceImgs

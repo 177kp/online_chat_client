@@ -1,9 +1,9 @@
 <!--index.wxml-->
 <view class="container">
    <div class="top-nav">
-   <navigator url="/pages/index/index">
+   <navigator url="/pages/onlineChat/index/index">
         <span>
-            <image src="/img/goback.png" mode="widthFix" class="top-nav-goback" />
+            <image src="../img/goback.png" mode="widthFix" class="top-nav-goback" />
             {{session.name}}
         </span>
     </navigator>
@@ -40,8 +40,8 @@
                       <image class="cm-avatar" src="{{item.uid == currentUser.uid ? currentUser.head_img : item.head_img}}" />
                       <!--声音-->
                       <div v-if="item.msg_type==2" class="cm-msg cm-bg-color cm-sound"  style="width:{{70+(item.msg.duration * 5)+ 'rpx'}};max-width:500rpx" bindtap="audioPlay" data-audio-src="{{item.msg.path}}">
-                          <image v-if="item.uid == $store.state.currentUser.uid" class="sound-img" src="{{item.uid == currentUser.uid ? '/img/sound1.png':'/img/sound.png'}}" mode="widthFix" data-sound-src="{{item.msg.path}}" />
-                          <!--<image v-if="item.uid != $store.state.currentUser.uid" class="sound-img" src="/img/sound.png" />-->
+                          <image v-if="item.uid == $store.state.currentUser.uid" class="sound-img" src="{{item.uid == currentUser.uid ? '../img/sound1.png':'../img/sound.png'}}" mode="widthFix" data-sound-src="{{item.msg.path}}" />
+                          <!--<image v-if="item.uid != $store.state.currentUser.uid" class="sound-img" src="../img/sound.png" />-->
                           <span class="sound-duration" >{{item.msg.duration}}"</span>
                       </div>
                   </div>
@@ -50,15 +50,15 @@
                       <!--视频-->
                       <div v-if="item.msg_type==3" class="cm-msg cm-video" >
                           <image src="{{item.msg.video_cover_img}}"  class="video-cover-img" bindtap="playVideo" data-video-src="{{item.msg.path}}" />
-                          <image src="/img/play.png" class="video-play-img" bindtap="playVideo" data-video-src="{{item.msg.path}}"/>
+                          <image src="../img/play.png" class="video-play-img" bindtap="playVideo" data-video-src="{{item.msg.path}}"/>
                       </div>
                   </div>
                   <div wx:if="{{item.msg_type==5}}">
-                      <image class="cm-avatar" src="/img/head_img/1.jpg" />
+                      <image class="cm-avatar" src="../img/head_img/1.jpg" />
                       <!--文件-->
                       <view v-if="item.msg_type==5" class="cm-msg cm-file">
                           <div class="mf-left"> 
-                              <image src="/img/file.jpg" mode="widthFix" />
+                              <image src="../img/file.jpg" mode="widthFix" />
                           </div>
                           <div class="mf-right">
                               <p class="mf-filename">{{item.msg.filename}}</p>
@@ -83,14 +83,14 @@
                   style="width:{{sendBtnShow?'410rpx':'490rpx'}};display:{{chatInputModel=='txt'?'block' : 'none'}}"></editor>
                 <view class="sound-btn-txt" style="display:{{chatInputModel=='sound'?'block' : 'none'}}" bind:touchstart="startRecord" bind:touchend="stopRecord">{{recording ? "松开  结束" : "按住  说话" }}</view>
                 <span class="sound-btn" id="sound-btn">
-                    <image src="/img/sound2.png" mode="widthFix" bindtap="changeChatInputModel" style="display:{{chatInputModel=='txt'?'block' : 'none'}}" />
-                    <image src="/img/keybord.png" mode="widthFix" bindtap="changeChatInputModel" style="display:{{chatInputModel!='txt'?'block' : 'none'}}" />
+                    <image src="../img/sound2.png" mode="widthFix" bindtap="changeChatInputModel" style="display:{{chatInputModel=='txt'?'block' : 'none'}}" />
+                    <image src="../img/keybord.png" mode="widthFix" bindtap="changeChatInputModel" style="display:{{chatInputModel!='txt'?'block' : 'none'}}" />
                 </span>
                 <div class="w-e-menu" style="z-index:10001;" id="face" >
-                    <image src="/img/face.png" bindtap="showFace" style="right:{{sendBtnShow?'172rpx':'92rpx'}}"/>
+                    <image src="../img/face.png" bindtap="showFace" style="right:{{sendBtnShow?'172rpx':'92rpx'}}"/>
                 </div>
                 <div class="w-e-menu" id="upload" style="display:{{sendBtnShow?'none':'block'}}">
-                    <image src="/img/plus.png" bindtap="showFile"/>
+                    <image src="../img/plus.png" bindtap="showFile"/>
                 </div>
                 <button type="primary" id="send-msg" style="display:{{sendBtnShow?'block':'none'}}" bindtap="sendMsg">发送</button>
               </view>
@@ -102,19 +102,19 @@
           </div>
           <div class="file-tool-bar" style="display:{{fileContainerShow?'block':'none'}}">
               <div class="ftb-item" bindtap="uploadImg">
-                  <image src="/img/photo.png" mode="widthFix"/>
+                  <image src="../img/photo.png" mode="widthFix"/>
                   <span>相册</span>
               </div>
               <div class="ftb-item" bindtap="take_a_img">
-                  <image src="/img/take-img.png" mode="widthFix"/>
+                  <image src="../img/take-img.png" mode="widthFix"/>
                   <span>拍照</span>
               </div>
               <div class="ftb-item" bindtap="take_a_vedio">
-                  <image src="/img/take-video.png" mode="widthFix"/>
+                  <image src="../img/take-video.png" mode="widthFix"/>
                   <span>视频</span>
               </div>
               <div class="ftb-item" bindtap="uploadImg">
-                  <image src="/img/tool-bar-file.png" mode="widthFix"/>
+                  <image src="../img/tool-bar-file.png" mode="widthFix"/>
                   <span>文件</span>
               </div>
           </div>
@@ -122,5 +122,5 @@
       </div>
   </div>
   <video class="video-block" src="{{videoSrc}}" style="display:{{videoSrc != '' ? 'block':'none'}};" autoplay="{{videoSrc != '' ? 'true':'false'}}" ></video>
-  <image class="video-close" style="display:{{videoSrc != '' ? 'block':'none'}};" src="/img/layer-close.png" mode="widthFix" bindtap="closeVideo"/>
+  <image class="video-close" style="display:{{videoSrc != '' ? 'block':'none'}};" src="../img/layer-close.png" mode="widthFix" bindtap="closeVideo"/>
 </view>

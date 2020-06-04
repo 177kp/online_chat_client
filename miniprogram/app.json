@@ -1,10 +1,10 @@
 {
   "pages": [
-    "pages/welcome/welcome", 
-    "pages/index/index",
-    "pages/contact/contact",
-    "pages/chat/chat",
-    "pages/my/my"
+    "pages/onlineChat/welcome/welcome", 
+    "pages/onlineChat/index/index",
+    "pages/onlineChat/contact/contact",
+    "pages/onlineChat/chat/chat",
+    "pages/onlineChat/my/my"
   ],
   "window": {
     "backgroundTextStyle": "light",

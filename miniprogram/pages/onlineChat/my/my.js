@@ -1,5 +1,5 @@
 // pages/my/my.js
-var onlineChat = require( '../../utils/online_chat_js_sdk.js' );
+var onlineChat = require( '../utils/online_chat_js_sdk.js' );
 Page({
 
   /**
@@ -17,13 +17,13 @@ Page({
     var app = getApp();
     var that = this;
     var timer = setInterval(function(){
-      if( app.globalData.currentUser !=null ){
+      if( onlineChat.userinfo !=null ){
         that.setData({
-          currentUser:app.globalData.currentUser
+          currentUser:onlineChat.userinfo
         });
         clearInterval(timer);
       }
-    },100);
+    },300);
   },
 
   /**
