@@ -12,6 +12,11 @@ function online_chat_js_sdk(config){
     };
     //提示消息方法
     this.alertMsg = function(msg){
+        wx.showToast({
+            title: msg,
+            icon: 'none',
+            duration: 2000
+        });
         console.log(msg);
     };
     //主机地址
@@ -453,13 +458,16 @@ httpApi.prototype = {
           url:  self.httpApiHost + "/index.php/online_chat/file/upload",
           filePath:file,
           name:"file",
-          header: getApp().globalData.header,
+          header: {
+            'content-type':'application/x-www-form-urlencoded',
+            'token': wx.getStorageSync("token")
+          },
           success(res) {
               var data = res.data;
               self.debug && console.log(data);
               data = JSON.parse(data);
               if( data.code != 200 ){
-                  alert(data.msg);
+                  self.alertMsg(data.msg);
                   return;
               }
               if( data.data.msg_type ==self.MSG_TYPE_IMG ){
@@ -626,8 +634,10 @@ function formatNumber(n) {
     return n[1] ? n : '0' + n
 }
 
+var online_chat_config = require( '../../../online_chat_config.js' );
+//console.log(online_chat_config);
 module.exports = new online_chat_js_sdk({
-  'httpApiHost':'https://chat.blogts.com',
-  'fileHost':'https://chat.blogts.com', //表情图片会用到
-  'debug':true
+  'httpApiHost':online_chat_config.default.httpApiHost,
+  'fileHost':online_chat_config.default.fileHost, //表情图片会用到
+  'debug':online_chat_config.default.debug
 });
