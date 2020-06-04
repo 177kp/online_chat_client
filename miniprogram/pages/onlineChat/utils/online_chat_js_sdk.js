@@ -383,7 +383,7 @@ httpApi.prototype = {
         success(data) {
           //console.log(data);
           if( data.data.code == 200 ){
-            wx.setStorageSync("token", data.data.data.PHPSESSID);
+            wx.setStorageSync("online_chat_token", data.data.data.PHPSESSID);
             cb();
           }else{
             console.log('login failed');
@@ -460,7 +460,7 @@ httpApi.prototype = {
           name:"file",
           header: {
             'content-type':'application/x-www-form-urlencoded',
-            'token': wx.getStorageSync("token")
+            'token': wx.getStorageSync("online_chat_token")
           },
           success(res) {
               var data = res.data;
@@ -510,7 +510,7 @@ httpApi.prototype = {
           data: data,
           header:{
             'content-type':'application/x-www-form-urlencoded',
-            'token': wx.getStorageSync("token")
+            'token': wx.getStorageSync("online_chat_token")
           },
           success(data) {
               cb(data.data);
