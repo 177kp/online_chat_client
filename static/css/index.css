@@ -500,3 +500,15 @@ footer {
     top:0;
     left:0;
 }
+#wait-join-num{
+    font-size:14px;
+    background:#666;
+    display:inline-block;
+    height:16px;
+    min-width:30px;
+    border-radius: 8px;
+    color:white;
+    line-height:16px;
+    font-weight:bold;
+    cursor:pointer;
+}

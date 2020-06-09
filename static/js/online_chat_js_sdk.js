@@ -37,7 +37,12 @@
         }else{
             this.debug = config.debug;
         }
-        
+        //是否是临时聊天会话
+        if( typeof config.is_tmp == 'undefined' ){
+            this.is_tmp = 0;
+        }else{
+            this.is_tmp = config.is_tmp;
+        }
         //websocket的访问token
         this.wesocket_access_token = '';
         //websocket服务的地址，该地址是由调用接口/index.php/online_chat/chat/getWebsocketAccessToken返回的
@@ -56,16 +61,72 @@
         this.MSG_TYPE_RICH_TXT = 4;
         //文件
         this.MSG_TYPE_FILE = 5;
-        //所有聊天会话
-        this.sessions = [];
-        //当前聊天会话
-        this.session = [];
-        //是否已获取sessions
-        this.hasGetsessions = false;
-        //联系人
-        this.contacts = [];
-        //当前session在sessions里的索引
-        this.sessionIndex = null;
+
+        //普通聊天
+        this.CHAT_TYPE_CHAT = 0;
+        //普通聊天
+        this.CHAT_TYPE_GROUP_CHAT = 1;
+        //客服
+        this.CHAT_TYPE_CUSTOMER = 2;
+        //咨询
+        this.CHAT_TYPE_CONSULT = 3;
+
+        //普通聊天
+        this.chat = {
+            //所有聊天会话
+            sessions:[],
+            //当前聊天会话
+            session:[],
+            //是否已获取sessions
+            hasGetsessions:false,
+            //联系人
+            contacts:[],
+            //当前session在sessions里的索引
+            sessionIndex:null
+        };
+
+        //客服
+        this.customer = {
+            //所有聊天会话
+            sessions:[],
+            //当前聊天会话
+            session:[],
+            //是否已获取sessions
+            hasGetsessions:false,
+            //联系人
+            contacts:[],
+            //当前session在sessions里的索引
+            sessionIndex:null
+        };
+
+        //咨询
+        this.consult = {
+            //所有聊天会话
+            sessions:[],
+            //当前聊天会话
+            session:[],
+            //是否已获取sessions
+            hasGetsessions:false,
+            //联系人
+            contacts:[],
+            //当前session在sessions里的索引
+            sessionIndex:null
+        };
+
+        //普通聊天
+        this.chat = {
+            //所有聊天会话
+            sessions:[],
+            //当前聊天会话
+            session:[],
+            //是否已获取sessions
+            hasGetsessions:false,
+            //联系人
+            contacts:[],
+            //当前session在sessions里的索引
+            sessionIndex:null
+        };
+
         //http的api
         this.httpApi = new httpApi();
         //在线聊天的助手方法（工具方法）
@@ -87,71 +148,84 @@
                 self.socketClient.connect();
             });
         },
+        //获取一个聊天类型的storage
+        getChatStorage:function getChatStorage(chat_type){
+            if( chat_type == self.CHAT_TYPE_CHAT || chat_type == self.CHAT_TYPE_GROUP_CHAT ){
+                var chatStorage = self.chat;
+            }else if( chat_type == self.CHAT_TYPE_CUSTOMER ){
+                var chatStorage = self.customer;
+            }else if( chat_type == self.CHAT_TYPE_CONSULT ){
+                var chatStorage = self.consult;
+            }
+            return chatStorage;
+        },
         //加入一个聊天会话
-        joinSession:function joinSession(contactIndex,cb){
-            for( var i=0;i<self.sessions.length;i++ ){
-                if( self.contacts[contactIndex].chat_type == self.sessions[i].chat_type &&
-                    self.contacts[contactIndex].to_id == self.sessions[i].to_id ){
-                        var session = self.sessions.splice(i, 1)[0]; 
-                        self.sessions.unshift(session);
-                        this.session = self.sessions[0];
-                        this.sessionIndex = 0;
-                        typeof cb == 'function' && cb(this.session);
+        joinSession:function joinSession(contactIndex,chat_type,cb){
+            var chatStorage = this.getChatStorage(chat_type);
+            for( var i=0;i<chatStorage.sessions.length;i++ ){
+                if( chatStorage.contacts[contactIndex].chat_type == chatStorage.sessions[i].chat_type &&
+                    chatStorage.contacts[contactIndex].to_id == chatStorage.sessions[i].to_id ){
+                        var session = chatStorage.sessions.splice(i, 1)[0]; 
+                        chatStorage.sessions.unshift(session);
+                        chatStorage.session = chatStorage.sessions[0];
+                        chatStorage.sessionIndex = 0;
+                        typeof cb == 'function' && cb(chatStorage.session);
                         return;
                     }
             }
-            self.sessions.unshift({
-                chat_type: self.contacts[contactIndex].chat_type,
-                head_img:self.contacts[contactIndex].head_img,
+            chatStorage.sessions.unshift({
+                chat_type: chatStorage.contacts[contactIndex].chat_type,
+                head_img:chatStorage.contacts[contactIndex].head_img,
                 lastMessage:null,
                 messages: [],
-                name: self.contacts[contactIndex].name,
-                to_id: self.contacts[contactIndex].to_id,
+                name: chatStorage.contacts[contactIndex].name,
+                to_id: chatStorage.contacts[contactIndex].to_id,
                 uid: self.userinfo.uid
             });
-            this.session = self.sessions[0];
-            this.sessionIndex = 0;
-            var chat_type = self.contacts[contactIndex].chat_type;
-            var to_id = self.contacts[contactIndex].to_id;
+            chatStorage.session = chatStorage.sessions[0];
+            chatStorage.sessionIndex = 0;
+            var chat_type = chatStorage.contacts[contactIndex].chat_type;
+            var to_id = chatStorage.contacts[contactIndex].to_id;
             this.httpApi.joinSession(chat_type,to_id);
             typeof cb == 'function' && cb(this.session);
         },
         //选择会话
-        selectSession:function selectSession(key){
-            self.sessionIndex = key;
-            vm.sessionIndex = key;
-            self.session = self.sessions[key];
-            if( typeof self.session.hasGetMessage =='undefined' ){
-                self.sessions[key]['hasGetMessage'] = '1';
+        selectSession:function selectSession(key,chat_type){
+            var chatStorage = this.getChatStorage(chat_type);
+            chatStorage.sessionIndex = key;
+            chatStorage.session = chatStorage.sessions[key];
+            if( typeof chatStorage.session.hasGetMessage =='undefined' ){
+                chatStorage.sessions[key]['hasGetMessage'] = '1';
             }else{
                 return;
             }
-            onlineChat.httpApi.getMessages(self.session['to_id'],self.session['chat_type']);
+            onlineChat.httpApi.getMessages(chatStorage.session['to_id'],chatStorage.session['chat_type']);
         },
         //移动端加载聊天页面
-        beforeLoadChatPage:function beforeLoadChatPage(session){
-            if( self.hasGetsessions == true ){
-                onlineChat.session = session;
+        beforeLoadChatPage:function beforeLoadChatPage(session,chat_type){
+            var chatStorage = this.getChatStorage(chat_type);
+            if( chatStorage.hasGetsessions == true ){
+                chatStorage.session = session;
                 onlineChat.httpApi.getMessages(session['to_id'],session['chat_type']);
                 return;
             }
             //直接进入聊天页面
             var count = 0;
-            self.userinfo.head_img = session.head_img;
-            self.userinfo.uid = session.uid;
-            self.userinfo.name = session.name;
+            self.userinfo.head_img = chatStorage.session.head_img;
+            self.userinfo.uid = chatStorage.session.uid;
+            self.userinfo.name = chatStorage.session.name;
             var timer = setInterval(function(){
                 if( count>100 ){
                     clearInterval(timer);
                     return;
                 }
-                if( self.hasGetsessions == true ){
-                    for( var i=0;i<self.sessions.length;i++ ){
-                        if( self.sessions[i].chat_type == session.chat_type && self.sessions[i].to_id == session.to_id ){
-                            self.session = self.sessions[i];
+                if( chatStorage.hasGetsessions == true ){
+                    for( var i=0;i<chatStorage.sessions.length;i++ ){
+                        if( chatStorage.sessions[i].chat_type == session.chat_type && chatStorage.sessions[i].to_id == session.to_id ){
+                            chatStorage.session = chatStorage.sessions[i];
                         }
                     }
-                    onlineChat.httpApi.getMessages(session['to_id'],session['chat_type']);
+                    onlineChat.httpApi.getMessages(chatStorage.session['to_id'],chatStorage.session['chat_type']);
                     clearInterval(timer);
                 };
                 count++;
@@ -224,10 +298,17 @@
             if( this.timer == null ){
                 this.timer = setInterval(function(){
                     if( that.socket.readyState != 1 ){
-                        self.httpApi.getAccessToken(function(){
-                            clearInterval(that.timer);
-                            that.connect();
-                        });
+                        if( self.is_tmp == 0 ){
+                            self.httpApi.getAccessToken(function(){
+                                clearInterval(that.timer);
+                                that.connect();
+                            });
+                        }else{
+                            self.httpApi.getTmpAccessToken(function(){
+                                clearInterval(that.timer);
+                                that.connect();
+                            });
+                        }
                     }
                 },5000);
             }
@@ -248,11 +329,13 @@
         },
         //发送消息
         sendMessage:function sendMessage(message){
+
             if( typeof message.chat_type == 'undefined' ){
-                message.chat_type = self.session.chat_type;
+                throw 'message.chat is undefined!';
             }
             if( typeof message.to_id == 'undefined' ){
-                message.to_id = self.session.to_id;
+                var chatStorage = self.getChatStorage(message.chat_type);
+                message.to_id = self.chat.session.to_id;
             }
             var msg = {
                 chat_type:message.chat_type,
@@ -285,57 +368,87 @@
         },
         //上线
         onlineTopic:function onlineTopic(msg){
-            for( var i=0;i<self.sessions.length;i++ ){
-                if( self.sessions[i].to_id == msg.uid ){
-                    self.sessions[i].online = 1;
-                    $("audio")[0].play();
+            if( msg.tmp == 0 ){
+                for( var i=0;i<self.chat.sessions.length;i++ ){
+                    if( self.chat.sessions[i].to_id == msg.uid ){
+                        self.chat.sessions[i].online = 1;
+                        $("audio")[0].play();
+                    }
+                }
+                for( var i=0;i<self.consult.sessions.length;i++ ){
+                    if( self.consult.sessions[i].to_id == msg.uid ){
+                        self.consult.sessions[i].online = 1;
+                        $("audio")[0].play();
+                    }
+                }
+            }else if( msg.tmp == 1 ){
+                for( var i=0;i<self.customer.sessions.length;i++ ){
+                    if( self.customer.sessions[i].to_id == msg.uid ){
+                        self.customer.sessions[i].online = 1;
+                        $("audio")[0].play();
+                    }
                 }
             }
+            
         },
         //下线
         offlineTopic:function offlineTopic(msg){
-            for( var i=0;i<self.sessions.length;i++ ){
-                if( self.sessions[i].to_id == msg.uid ){
-                    self.sessions[i].online = 0;
+            if( msg.tmp == 0 ){
+                for( var i=0;i<self.chat.sessions.length;i++ ){
+                    if( self.chat.sessions[i].to_id == msg.uid ){
+                        self.chat.sessions[i].online = 0;
+                    }
+                }
+                for( var i=0;i<self.consult.sessions.length;i++ ){
+                    if( self.consult.sessions[i].to_id == msg.uid ){
+                        self.consult.sessions[i].online = 0;
+                    }
+                }
+            }else if( msg.tmp == 1 ){
+                for( var i=0;i<self.customer.sessions.length;i++ ){
+                    if( self.customer.sessions[i].to_id == msg.uid ){
+                        self.customer.sessions[i].online = 0;
+                    }
                 }
             }
         },
         //消息
         messageTopic:function messageTopic(msg){
+            var chatStorage = self.getChatStorage(msg.chat_type);
             var exist = 0;
-            for( var i=0;i<self.sessions.length;i++ ){
+            for( var i=0;i<chatStorage.sessions.length;i++ ){
                 
-                if( self.sessions[i].chat_type != msg.chat_type ){
+                if( chatStorage.sessions[i].chat_type != msg.chat_type ){
                     continue;
                 }
                 //
                 if( msg.chat_type == 0 ){
                     if( 
-                        ( msg.uid == self.sessions[i].uid && msg.to_id == self.sessions[i].to_id )
-                        || (msg.uid == self.sessions[i].to_id && msg.to_id == self.sessions[i].uid )
+                        ( msg.uid == chatStorage.sessions[i].uid && msg.to_id == chatStorage.sessions[i].to_id )
+                        || (msg.uid == chatStorage.sessions[i].to_id && msg.to_id == chatStorage.sessions[i].uid )
                     ){
-                        Vue.set(self.sessions[i].messages,self.sessions[i].messages.length,msg);
-                        self.sessions[i].lastMessage = msg;
+                        Vue.set(chatStorage.sessions[i].messages,chatStorage.sessions[i].messages.length,msg);
+                        chatStorage.sessions[i].lastMessage = msg;
                         exist = 1;
                         break;
                     }
                 }else if( msg.chat_type == 1 ){
-                    if( msg.to_id == self.sessions[i].to_id ){
-                        Vue.set(self.sessions[i].messages,self.sessions[i].messages.length,msg);
-                        self.sessions[i].lastMessage = msg;
+                    if( msg.to_id == chatStorage.sessions[i].to_id ){
+                        Vue.set(chatStorage.sessions[i].messages,chatStorage.sessions[i].messages.length,msg);
+                        chatStorage.sessions[i].lastMessage = msg;
                         exist = 1;
                         break;
                     }
                 }
-                if( self.sessions[i].chat_type == msg.chat_type && (self.sessions[i].to_id == self.userinfo.uid) ){
-                    Vue.set(self.sessions[i].messages,self.sessions[i].messages.length,msg);
-                    self.sessions[i].lastMessage = msg;
+                if( chatStorage.sessions[i].chat_type == msg.chat_type && (chatStorage.sessions[i].to_id == self.userinfo.uid) ){
+                    Vue.set(chatStorage.sessions[i].messages,chatStorage.sessions[i].messages.length,msg);
+                    chatStorage.sessions[i].lastMessage = msg;
                     exist = 1;
                     break;
                 }
             }
             if( exist == 1 ){
-                var session = self.sessions.splice(i,1)[0];
+                var session = chatStorage.sessions.splice(i,1)[0];
             }else{
                 var session = {
                     chat_type: msg.chat_type,
@@ -347,10 +460,10 @@
                     uid: msg.to_id,
                     online:1
                 };
-                Vue.set( self.sessions,self.sessions.length,session );
-                session = self.sessions.pop();
+                Vue.set( chatStorage.sessions,chatStorage.sessions.length,session );
+                session = chatStorage.sessions.pop();
             }
-            self.sessions.unshift(session);
+            chatStorage.sessions.unshift(session);
         }
     }
     //在线聊天http的api
@@ -367,7 +480,7 @@
                 data: data,
                 success:function(data){
                     data = $.parseJSON(data);
-                    sessionStorage.setItem(`online_chat_phpsessid`,data.data.PHPSESSID);
+                    sessionStorage.setItem('online_chat_phpsessid',data.data.PHPSESSID);
                     cb(data);
                 }
             });
@@ -395,6 +508,25 @@
             });
             //$.ajaxSettings.async = true;
         },
+        //获取临时websocket访问的token
+        getTmpAccessToken:function getTmpAccessToken(cb){
+            //$.ajaxSettings.async = false;
+            this.httpGet( self.httpApiHost + '/index.php/online_chat/chat/getTmpWebsocketAccessToken',function(data){
+                self.debug && console.log(data);
+                data = $.parseJSON(data);
+                if( data.code == 200 ){
+                    self.userinfo.uid = data.data.userinfo.uid;
+                    self.userinfo.name = data.data.userinfo.name;
+                    self.userinfo.head_img = data.data.userinfo.head_img;
+                    self.wesocket_access_token = data.data.wesocket_access_token;
+                    self.ws_addr = data.data.ws_addr;
+                    if( typeof cb != 'undefined' ){
+                        cb();
+                    }
+                }
+            });
+            //$.ajaxSettings.async = true;
+        },
         //加入一个聊天会话
         joinSession:function joinSession(chat_type,to_id){
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/joinSession',{chat_type:chat_type,to_id:to_id},function(data){
@@ -406,26 +538,28 @@
             });
         },
         //获取所有聊天会话
-        getSessions:function getSessions(cb){
+        getSessions:function getSessions(chat_type,cb){
+            var chatStorage = self.getChatStorage(chat_type);
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/index',function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
                 for( var i=0;i<data.data.length;i++ ){
-                    Vue.set(self.sessions,i,data.data[i]);
+                    Vue.set(chatStorage.sessions,i,data.data[i]);
                 }
-                self.hasGetsessions = true;
+                chatStorage.hasGetsessions = true;
                 if( typeof cb == 'function' ){
                     cb(data);
                 }
             });
         },
         //获取所有联系人
-        getContacts:function getContacts(cb){
+        getContacts:function getContacts(chat_type,cb){
+            var chatStorage = self.getChatStorage(chat_type);
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/getContacts',function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
                 for( var i=0;i<data.data.length;i++ ){
-                    Vue.set(self.contacts,i,data.data[i]);
+                    Vue.set(chatStorage.contacts,i,data.data[i]);
                 }
                 if( typeof cb == 'function' ){
                     cb(data);
@@ -434,22 +568,25 @@
         },
         //获取会话历史聊天记录
         getMessages:function getMessages(to_id,chat_type){
+            var chatStorage = self.getChatStorage(chat_type);
             this.httpGet(self.httpApiHost+ '/index.php/online_chat/message/index',{to_id:to_id,chat_type:chat_type},function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
                 data = data.data;
                 for( var i=0;i<data.length;i++ ){
-                    Vue.set(self.session.messages,self.session.messages.length,data[i]);
+                    Vue.set(chatStorage.session.messages,chatStorage.session.messages.length,data[i]);
                 }
             });
         },
         //上传文件
         uploadFile:function uploadFile(param) {
-            if( typeof param.to_id == 'undefined' ){
-                param.to_id = self.session.to_id;
-            }
+            
             if( typeof param.chat_type == 'undefined' ){
-                param.chat_type = self.session.chat_type;
+                throw 'param.chat_type is undefined!';
+            }
+            if( typeof param.to_id == 'undefined' ){
+                var chatStorage = self.getChatStorage(param.chat_type);
+                param.to_id = chatStorage.session.to_id;
             }
             var myform = new FormData();
             myform.append('file',param.file);

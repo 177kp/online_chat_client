@@ -37,7 +37,7 @@
             </div>
             <div class="list">
                 <ul class="sessions" v-show="sideTab=='session'?true:false">
-                    <li v-for="(item,key) in onlineChat.sessions" :class="onlineChat.sessionIndex == key ? 'active':''" @click="onlineChat.selectSession(key)">
+                    <li v-for="(item,key) in onlineChat.chat.sessions" :class="onlineChat.chat.sessionIndex == key ? 'active':''" @click="onlineChat.selectSession(key,1)">
                         <img class="avatar"  :src="onlineChat.helper.getHeadImg(item.head_img,item.online)"> 
                         <div>
                             <p class="name">{{item.name}}</p>
@@ -48,7 +48,7 @@
                     </li>
                 </ul>
                 <ul class="contacts" v-show="sideTab=='contact'?true:false">
-                    <li v-for="(item,key) in onlineChat.contacts" @click="joinSession(key)">
+                    <li v-for="(item,key) in onlineChat.chat.contacts" @click="joinSession(key)">
                         <img :src="item.head_img" class="avatar"> 
                         <div>
                             <p class="name">{{item.name}}</p> 
@@ -59,13 +59,13 @@
         </div>
         <div class="main">
             <div class="chat-title">
-                {{onlineChat.session.name}}
+                {{onlineChat.chat.session.name}}
             </div>
             <div class="chat-message" id="chat-message">
-                <ul v-if="onlineChat.session" style="height:380px" v-scroll-bottom="onlineChat.session.messages">
-                    <li v-for="(item,key) in onlineChat.session.messages" class="cm-item">
+                <ul v-if="onlineChat.chat.session" style="height:380px" v-scroll-bottom="onlineChat.chat.session.messages">
+                    <li v-for="(item,key) in onlineChat.chat.session.messages" class="cm-item">
                         <!--时间-->
-                        <p class="cm-time" v-if="key==0 || item.ctime-onlineChat.session.messages[key-1].ctime > 60" >
+                        <p class="cm-time" v-if="key==0 || item.ctime-onlineChat.chat.session.messages[key-1].ctime > 60" >
                             <span>{{onlineChat.helper.messageFormatTime(item.ctime*1000)}}</span>
                         </p>
 
@@ -138,8 +138,8 @@
             layer.msg(msg);
         }
     });
-    onlineChat.httpApi.getSessions();
-    onlineChat.httpApi.getContacts();
+    onlineChat.httpApi.getSessions(onlineChat.CHAT_TYPE_CHAT);
+    onlineChat.httpApi.getContacts(onlineChat.CHAT_TYPE_CHAT);
     var vm = new Vue({
         el: '#app',
         data: {
@@ -149,7 +149,7 @@
         },
         methods: {
             joinSession:function(contactIndex){
-                onlineChat.joinSession(contactIndex);
+                onlineChat.joinSession(contactIndex,onlineChat.CHAT_TYPE_CHAT);
                 this.sideTab = 'session';
             },
             'last_msg':function(message){
@@ -206,7 +206,7 @@
     
     //发送消息
     function sendMsg(){
-        if( typeof onlineChat.session.chat_type == 'undefined' ){
+        if( typeof onlineChat.chat.session.chat_type == 'undefined' ){
             alert('请选择聊天！');
             return;
         }
@@ -223,6 +223,7 @@
             return;
         }
         onlineChat.socketClient.sendMessage({
+            chat_type:onlineChat.chat.session.chat_type,
             msg:message,
             msg_type:msg_type
         });
@@ -278,15 +279,15 @@
     $('body').on('click','.cm-img img',function(){
         var index = 0;
         var imgs = [];
-        for( var i=0;i<onlineChat.session.messages.length;i++ ){
-            if( onlineChat.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
-                if( onlineChat.session.messages[i].msg == $(this).attr('src') ){
+        for( var i=0;i<onlineChat.chat.session.messages.length;i++ ){
+            if( onlineChat.chat.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( onlineChat.chat.session.messages[i].msg == $(this).attr('src') ){
                     index = imgs.length;
                 }
                 imgs.push({
                     "alt": "",
                     "pid": i, //图片id
-                    "src": onlineChat.session.messages[i].msg, //原图地址
+                    "src": onlineChat.chat.session.messages[i].msg, //原图地址
                     "thumb": "" //缩略图地址
                 });
             }
@@ -323,12 +324,13 @@
         });
     });
     $('body').on('change','#upload input[type=file]',function(){
-        if( typeof onlineChat.session.uid == 'undefined' ){
+        if( typeof onlineChat.chat.session.uid == 'undefined' ){
             alert('请选择聊天');
             return;
         }
         onlineChat.httpApi.uploadFile({
-            file:$(this)[0].files[0]
+            file:$(this)[0].files[0],
+            chat_type:onlineChat.chat.session.chat_type
         });
         $('#upload').html($('#upload').html());
     });

@@ -83,7 +83,7 @@ img{
     var names = getChatNames();
     var name =  names[Math.floor(Math.random() * names.length)];
     var head_img = parseInt( Math.random() * 1000) % 17 + 1;
-    head_img =   window.location.origin + '/static/img/head_img/' + head_img.toString() + '.jpg';
+    head_img =   window.location.origin + '/online_chat_client/static/img/head_img/' + head_img.toString() + '.jpg';
     //console.log(head_img);
     $('input[name=app_uid]').val(app_uid);
     $('input[name=name]').val(name);

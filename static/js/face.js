@@ -1,4 +1,4 @@
-var onlineChatFaceImgRootPath = window.location.origin +'/static/img/face/';
+var onlineChatFaceImgRootPath = window.location.origin +'/online_chat_client/static/img/face/';
 var onlineChatFaceImgs = [
 	{
 		"src":onlineChatFaceImgRootPath+'1.png',

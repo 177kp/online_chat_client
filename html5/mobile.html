@@ -27,7 +27,7 @@
         <div>
             <div class="list">
                 <ul class="sessions">
-                    <li v-for="(item,key) in $store.state.onlineChat.sessions" 
+                    <li v-for="(item,key) in $store.state.onlineChat.chat.sessions" 
                         @click="goto(item)" @touchend="">
                         <div class="cols-2">
                             <img class="avatar" :src="$store.state.onlineChat.helper.getHeadImg(item.head_img,item.online)">
@@ -69,7 +69,7 @@
             <div>
                 <div class="list" style="padding-bottom:3.6rem">
                     <ul class="contacts">
-                        <li v-for="(item,key) in $store.state.onlineChat.contacts" @click="goto(key)">
+                        <li v-for="(item,key) in $store.state.onlineChat.chat.contacts" @click="goto(key)">
                             <div class="cols-2">
                                 <img class="avatar" :src="item.head_img">
                             </div>
@@ -134,12 +134,12 @@
                 <div class="main" >
                         <div class="chat-title">
                             <img src="../static/img/goback.png" @click.stop="goBack" @touchend.stop="goBack" />
-                            <span>{{$store.state.onlineChat.session.name}}</span>
+                            <span>{{$store.state.onlineChat.chat.session.name}}</span>
                         </div>
-                        <div class="chat-message" id="message" v-scroll-bottom="$store.state.onlineChat.session.messages"  >
+                        <div class="chat-message" id="message" v-scroll-bottom="$store.state.onlineChat.chat.session.messages"  >
                             <ul >
-                                <li v-for="(item,key) in $store.state.onlineChat.session.messages" :class="{self:item.uid==$store.state.onlineChat.userinfo.uid}">
-                                    <p class="cm-time" v-if="key==0 || item.ctime-$store.state.onlineChat.session.messages[key-1].ctime > 60" >
+                                <li v-for="(item,key) in $store.state.onlineChat.chat.session.messages" :class="{self:item.uid==$store.state.onlineChat.userinfo.uid}">
+                                    <p class="cm-time" v-if="key==0 || item.ctime-$store.state.onlineChat.chat.session.messages[key-1].ctime > 60" >
                                         <span>{{ $store.state.onlineChat.helper.messageFormatTime(item.ctime*1000) }}</span>
                                     </p>
                                     <div>
@@ -228,8 +228,8 @@
             layer.msg(msg);
         }
     });
-    onlineChat.httpApi.getSessions();
-    onlineChat.httpApi.getContacts();
+    onlineChat.httpApi.getSessions(onlineChat.CHAT_TYPE_CHAT);
+    onlineChat.httpApi.getContacts(onlineChat.CHAT_TYPE_CHAT);
     //获取访问websocket服务的token
     onlineChat.start();
     //聊天会话列表组件
@@ -275,7 +275,7 @@
         methods:{
             goto(index){
                 var that = this;
-                onlineChat.joinSession(index,function(session){
+                onlineChat.joinSession(index,onlineChat.CHAT_TYPE_CHAT,function(session){
                     that.$router.push({"name":"main",params:{session}});
                 });
             }
@@ -306,7 +306,7 @@
         },
         beforeRouteEnter : (to, from, next) => {
             if( typeof to.params.session == 'undefined'  ){
-                var session = sessionStorage.getItem(`sessionInfo`);
+                var session = sessionStorage.getItem('sessionInfo');
                 //console.log(store.state.sessions);
                 if( typeof session == "undefined" || session == null){
                     window.location.href = window.location.href.substr(0,window.location.href.length-6);
@@ -315,10 +315,10 @@
                 var session = $.parseJSON(session);
             }else{
                 var session = to.params.session;
-                sessionStorage.setItem(`sessionInfo`, JSON.stringify(to.params.session));
+                sessionStorage.setItem('sessionInfo', JSON.stringify(to.params.session));
             }
             //console.log( store.state.session );
-            onlineChat.beforeLoadChatPage(session);
+            onlineChat.beforeLoadChatPage(session,onlineChat.CHAT_TYPE_CHAT);
             next();
         },
         mounted: function () {
@@ -412,7 +412,7 @@
 
     function sendMsg() {
         var message = $('input[name=msg]').val();
-        if (typeof onlineChat.session.chat_type == 'undefined') {
+        if (typeof onlineChat.chat.session.chat_type == 'undefined') {
             alert('请选择聊天！');
             return;
         }
@@ -432,7 +432,8 @@
 
         onlineChat.socketClient.sendMessage({
             msg:message,
-            msg_type:msg_type
+            msg_type:msg_type,
+            chat_type:onlineChat.chat.session.chat_type
         });
         editor.txt.html('');
         editor.customConfig.onchange();
@@ -495,14 +496,15 @@
     });
     function uploadMediaFile(obj){
 
-        if( typeof onlineChat.session.chat_type == 'undefined' ){
+        if( typeof onlineChat.chat.session.chat_type == 'undefined' ){
             alert('请选择聊天！');
             return;
         }
         store.state.fileToolShow = false;
         var file = $(obj)[0].files[0];
         onlineChat.httpApi.uploadFile({
-            file:file
+            file:file,
+            chat_type:onlineChat.chat.session.chat_type
         });
     }
     $('body').on('click','.cm-img img',function(){
