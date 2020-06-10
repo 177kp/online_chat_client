@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>test</title>
+    <script type="text/javascript" src="../static/js/vue.js"></script>
+
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.slimscroll.min.js"></script>
+    <script type="text/javascript" src="../static/js/online_chat_js_sdk.js"></script>
+    <script type="text/javascript" src="../static/js/wangEditor/wangEditor.min.js"></script>
+    <script type="text/javascript" src="../static/js/face.js"></script>
+    <script type="text/javascript" src="../static/js/layer/layer.js"></script>
+    <link rel="stylesheet" href="../static/css/index.css">
+</head>
+
+<body style="background:#f5f5f5 url('../static/img/bg.jpg') no-repeat center;background-size: cover;">
+    <div id="app" >
+        <div class="main">
+            <div class="chat-title">
+                联系客服
+            </div>
+            <div class="chat-message" id="chat-message">
+                <ul v-if="onlineChat.customer.session" style="height:380px" v-scroll-bottom="onlineChat.customer.session.messages">
+                    <li v-for="(item,key) in onlineChat.customer.session.messages" class="cm-item">
+                        <!--时间-->
+                        <p class="cm-time" v-if="key==0 || item.ctime-onlineChat.customer.session.messages[key-1].ctime > 60" >
+                            <span>{{onlineChat.helper.messageFormatTime(item.ctime*1000)}}</span>
+                        </p>
+
+                        <div :class="{self:item.uid == onlineChat.userinfo.uid}">
+                            <!--头像-->
+                            <img class="cm-avatar" width="30" height="30" :src="item.uid == onlineChat.userinfo.uid ? '../static/img/user.png':'../static/img/customer.png'" />
+                            <!--文本，富文本-->
+                            <div v-if="item.msg_type==0 || item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
+                            </div>
+                            <!--图片-->
+                            <div v-if="item.msg_type==1" class="cm-msg cm-img">
+                                <img :src="item.msg" />
+                            </div>
+                            <!--声音-->
+                            <div v-if="item.msg_type==2" class="cm-msg cm-bg-color cm-sound" :sound-src="item.msg.path" :style="{width:parseInt(70+(item.msg.duration * 5)).toString() + 'px'}">
+                                <img v-if="item.uid == onlineChat.userinfo.uid" class="sound-img" src="../static/img/sound1.png" />
+                                <img v-if="item.uid != onlineChat.userinfo.uid" class="sound-img" src="../static/img/sound.png" />
+                                <span class="sound-duration" >{{parseInt(item.msg.duration)}}"</span>
+                            </div>
+                            <!--视频-->
+                            <div v-if="item.msg_type==3" class="cm-msg cm-video" :video-src="item.msg.path">
+                                <img :src="onlineChat.httpApiHost+item.msg.video_cover_img"  class="video-cover-img" />
+                                <img src="../static/img/play.png" class="video-play-img"/>
+                            </div>
+                            <!--文件-->
+                            <div v-if="item.msg_type==5" class="cm-msg cm-file">
+                                <div class="mf-left"> 
+                                    <img src="../static/img/file.jpg"/>
+                                </div>
+                                <div class="mf-right">
+                                    <p class="mf-filename">{{item.msg.filename}}</p>
+                                    <p class="mf-detail">
+                                        <span class="mf-size">{{onlineChat.helper.formatFilesize(item.msg.filesize)}}</span>
+                                        <span class="mf-download"><a :href="onlineChat.helper.getFileDownloadUrl(item.msg.path,item.msg.filename)" target="_bank" style="color:#35ac2f;text-decoration: none">下载</a></span>
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="chat-message-editor">
+                <div name="msg" placeholder="请输入内容" id="editor"></div>
+            </div>
+
+            <div class="chat-message-tool" style="z-index:100000">
+                <span class="chat-message-tool-tip">按下Ctrl+Enter换行</span>
+                <button onclick="sendMsg()">发送</button>
+            </div>
+        </div>
+    </div>
+    
+    <audio controls style="display:none" id="online-sound">
+        <source src="../static/mp3/online.mp3" type="audio/mpeg">
+      您的浏览器不支持 audio 元素。
+      </audio>
+      <audio controls style="display:none" id="chat-sound">
+        <source src="" type="audio/mpeg">
+      您的浏览器不支持 audio 元素。
+      </audio>
+</body>
+<script>
+    //实例化sdk
+    var onlineChat = new online_chat_js_sdk({
+        httpApiHost:'',
+        noLoginJumpUrl:'index.html',
+        alertMsg:function(msg){
+            layer.msg(msg);
+        }
+    });
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            // 当前用户
+            onlineChat:onlineChat,
+            sideTab:'session'
+        },
+        methods: {
+            joinSession:function(contactIndex){
+                onlineChat.joinSession(contactIndex);
+                this.sideTab = 'session';
+            },
+            'last_msg':function(message){
+                if( message != null && message != '' ){
+                    if( message.name == null ){
+                        message.name = '';
+                    }
+                    var msg = message.msg;
+                    if( message.msg_type == onlineChat.MSG_TYPE_IMG ){
+                        msg = '[图片]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_VIDEO ){
+                        msg = '[视频]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_SOUND ){
+                        msg = '[音频]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_FILE ){
+                        msg = '[文件]';
+                    }
+                    if( message.uid != onlineChat.userinfo.uid ){
+                        if( message.msg_type == onlineChat.MSG_TYPE_RICH_TXT ){
+                            return '<p>[' + message.name + ']:' + msg.substr(3);
+                        }else{
+                            return '[<span>'+message.name+'</span>]：' + msg;
+                        }
+                    }else{
+                        return msg;
+                    }
+                }else{
+                    return '';
+                }
+            }
+        },
+        directives: {
+            // 发送消息后滚动到底部
+            'scroll-bottom':function() {
+                if (typeof this.vm != "undefined") {
+                    this.vm.$nextTick(function(){
+                        var elem = document.getElementById('chat-message');
+                        var scrollTop = elem.scrollHeight - elem.clientHeight;
+                        $(elem).slimScroll({ scrollTo: scrollTop.toString() + 'px' });
+                        elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+                    });
+                }
+            }
+        },
+        mounted:function(){
+            this.$nextTick(function () {
+                // Code that will run only after the
+                // entire view has been rendered
+            });
+        }
+    });
+    onlineChat.startTmp();
+    
+    //发送消息
+    function sendMsg(){
+        var message = editor.txt.html();
+        if( /<img[^>]*>/.test( message ) ){
+            var message = editor.txt.html();
+            var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
+        }else{
+            var message = editor.txt.text();
+            var msg_type = onlineChat.MSG_TYPE_TXT;
+        }
+        if( message == '' ){
+            alert('消息不能为空！');
+            return;
+        }
+        onlineChat.socketClient.sendMessage({
+            msg:message,
+            msg_type:msg_type,
+            chat_type:onlineChat.CHAT_TYPE_CUSTOMER
+        });
+        editor.txt.html('');
+    }
+    $(function(){
+        $('.list').slimScroll({
+            height: '460px'
+        });
+        $('.chat-message').slimScroll({
+            height: '370px'
+        });
+        $('.w-e-text').slimScroll({
+            height: '90px'
+        }); 
+    });
+    
+    var E = window.wangEditor;
+    var editor = new E('#editor');
+    // 自定义菜单配置
+    editor.customConfig.menus = [
+        'emoticon',  // 表情
+    ];
+
+    editor.customConfig.emotions = [
+            {
+                // tab 的标题
+                title: '默认',
+                // type -> 'emoji' / 'image'
+                type: 'image',
+                // content -> 数组
+                content: onlineChatFaceImgs
+            },
+            {
+                // tab 的标题
+                title: 'emoji',
+                // type -> 'emoji' / 'image'
+                type: 'emoji',
+                // content -> 数组
+                content: '😀 😃  😁 😆 😅 😂 😊 😇 🙂 🙃 😉 😌 😍 😘 😗 😙 😚 😋 😜 😎 😏 😒 😞 😔 😟 😕 😣 😖 😫 😩 😤 😠 😶 😐 😑 😯 😦 😧 😮 😲 😵 😳 😱 😨 😰 😢 😥 😭 😓 😪 😴 🙄 🤔 😬 🤐'.split(/\s/)
+            },
+            {
+                // tab 的标题
+                title: 'emoji手势',
+                // type -> 'emoji' / 'image'
+                type: 'emoji',
+                // content -> 数组
+                content: ['🙌', '👏', '👋', '👍', '👎', '👊', '✊', '️👌', '✋', '👐', '💪', '🙏', '️👆', '👇', '👈', '👉', '🖕', '🖐', '🤘']
+            }
+        ]
+    editor.create();
+    $('.w-e-toolbar').append('<div class="w-e-menu" id="upload"><i class="w-e-icon-file"></i><input type="file" name="file"></div>');
+    $('body').on('click','.cm-img img',function(){
+        var index = 0;
+        var imgs = [];
+        for( var i=0;i<onlineChat.session.messages.length;i++ ){
+            if( onlineChat.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( onlineChat.session.messages[i].msg == $(this).attr('src') ){
+                    index = imgs.length;
+                }
+                imgs.push({
+                    "alt": "",
+                    "pid": i, //图片id
+                    "src": onlineChat.session.messages[i].msg, //原图地址
+                    "thumb": "" //缩略图地址
+                });
+            }
+        }
+        //console.log(imgs);
+        layer.photos({
+            photos: {
+                "title": "", //相册标题
+                "id": 123, //相册id
+                "start": index, //初始显示的图片序号，默认0
+                "data":imgs
+            }
+            ,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
+            ,shade: [0.9,'#000']
+            ,closeBtn:true
+        });
+    });
+    $('body').on('click','.cm-sound',function(){
+        var sound_src = $(this).attr('sound-src');
+        $('#chat-sound').attr('src',sound_src);
+        $("#chat-sound")[0].play();
+    });
+    $('body').on('click','.cm-video',function(){
+        var video_src = $(this).attr('video-src');
+        layer.open({
+            title:false,
+            type: 1,
+            skin: 'layui-layer-demo', //样式类名
+            closeBtn: 0, //不显示关闭按钮
+            area:['auto','auto'],
+            anim: 2,
+            shadeClose: true, //开启遮罩关闭
+            content: '<video width="800px" height="600px" controls="controls" autoplay="autoplay" style="background:#000"><source src="'+video_src+'" type="video/mp4" /></video>'
+        });
+    });
+    $('body').on('change','#upload input[type=file]',function(){
+        if( typeof onlineChat.customer.session.uid == 'undefined' ){
+            alert('请选择聊天');
+            return;
+        }
+        onlineChat.httpApi.uploadFile({
+            file:$(this)[0].files[0],
+            chat_type:onlineChat.CHAT_TYPE_CUSTOMER
+        });
+        $('#upload').html($('#upload').html());
+    });
+</script>
+
+</html>

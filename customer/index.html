@@ -1,0 +1,101 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>test</title>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/js/names.js"></script>
+    <script type="text/javascript" src="../static/js/online_chat_js_sdk.js"></script>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"/>
+</head>
+<style type="text/css">
+*{
+    margin:0;
+    padding:0;
+}
+form{
+    width:300px;
+    position:absolute;
+    left:50%;
+    margin-left:-150px;
+    margin-top:100px;
+}
+img{
+    width:160px;
+    height:160px;
+    border-radius: 80px;
+    border:1px #ccc solid;
+}
+.form-item{
+    margin-top:20px;
+}
+.form-item span{
+    display:block;
+    width:100%;
+    line-height:30px;
+}
+.form-item input{
+    display:block;
+    width:100%;
+    height:30px;
+    line-height:30px;
+    padding-left:2px;
+}
+.form-item .button{
+    width:100%;
+    display:block;
+    border:1px #ccc solid;
+    padding-left:2px;
+    text-align:center;
+    cursor:pointer
+}
+</style>
+<body>
+
+    <form>
+        <h1 style="text-align:center">online chat</h3>
+        <div class="form-item" style="text-align:center">
+            <img src="" style="width:100px;height:100px"/>
+        </div>
+        <div class="form-item">
+            <span>应用UID:</span>
+            <input type="input" name="app_uid" value="" />
+        </div>
+        <div class="form-item">
+            <span>昵称：</span>
+            <input type="input" name="name" value="" />
+        </div>
+        <div class="form-item">
+            <span class="button" onclick="doLogin('')">登录到客服</span>
+            <input type="hidden" name="head_img" value="" />
+            <input type="hidden" name="user_type" value="1" />
+        </div>
+    </form>
+</body>
+<script>
+    //实例化sdk
+    var onlineChat = new online_chat_js_sdk({
+        httpApiHost:''
+    });
+    var app_uid = parseInt( Math.random() * 1000 );
+    var names = getChatNames();
+    var name =  names[Math.floor(Math.random() * names.length)];
+    var head_img = parseInt( Math.random() * 1000) % 17 + 1;
+    head_img =   window.location.origin + '/online_chat_client/static/img/head_img/' + head_img.toString() + '.jpg';
+    //console.log(head_img);
+    $('input[name=app_uid]').val(app_uid);
+    $('input[name=name]').val(name);
+    $('input[name=head_img]').val( head_img );
+    $('img').attr('src',head_img);
+    function doLogin(type){
+        onlineChat.httpApi.doLogin($('form').serialize(),function(data){
+            if( data.code == 200 ){
+                window.location.href='customer.html';
+            }else{
+                alert(data.msg);
+            }
+        });
+    }
+</script>
+</html>

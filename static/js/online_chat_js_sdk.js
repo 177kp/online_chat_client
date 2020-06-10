@@ -148,6 +148,14 @@
                 self.socketClient.connect();
             });
         },
+        //开始临时会话
+        startTmp:function startTmp(){
+            //获取访问websocket服务的token
+            self.httpApi.getTmpAccessToken(function(data){
+                //连接websocket服务
+                self.socketClient.connect();
+            });
+        },
         //获取一个聊天类型的storage
         getChatStorage:function getChatStorage(chat_type){
             if( chat_type == self.CHAT_TYPE_CHAT || chat_type == self.CHAT_TYPE_GROUP_CHAT ){
@@ -335,7 +343,7 @@
             }
             if( typeof message.to_id == 'undefined' ){
                 var chatStorage = self.getChatStorage(message.chat_type);
-                message.to_id = self.chat.session.to_id;
+                message.to_id = chatStorage.session.to_id;
             }
             var msg = {
                 chat_type:message.chat_type,
@@ -364,6 +372,12 @@
                 this.offlineTopic(message.msg);
             }else if( message.topic == 'message' ){
                 this.messageTopic(message.msg);
+            }else if( message.topic == 'wait_customer_join' ){
+                this.waitCustomerJoinTopic(message.msg);
+            }else if( message.topic == 'customer_join' ){
+                this.customerJoinTopic(message.msg);
+            }else if( message.topic == 'cusomter_new_user' ){
+                this.customerNewUserTopic(message.msg);
             }
         },
         //上线
@@ -410,6 +424,11 @@
                         self.customer.sessions[i].online = 0;
                     }
                 }
+                for( var i=0;i<self.customer.contacts.length;i++ ){
+                    if( self.customer.contacts[i].to_id == msg.uid ){
+                        self.customer.contacts.splice(i,1);
+                    }
+                }
             }
         },
         //消息
@@ -417,12 +436,11 @@
             var chatStorage = self.getChatStorage(msg.chat_type);
             var exist = 0;
             for( var i=0;i<chatStorage.sessions.length;i++ ){
-                
                 if( chatStorage.sessions[i].chat_type != msg.chat_type ){
                     continue;
                 }
                 //
-                if( msg.chat_type == 0 ){
+                if( msg.chat_type == onlineChat.CHAT_TYPE_CHAT || msg.chat_type == onlineChat.CHAT_TYPE_CUSTOMER ){
                     if( 
                         ( msg.uid == chatStorage.sessions[i].uid && msg.to_id == chatStorage.sessions[i].to_id )
                         || (msg.uid == chatStorage.sessions[i].to_id && msg.to_id == chatStorage.sessions[i].uid )
@@ -432,7 +450,7 @@
                         exist = 1;
                         break;
                     }
-                }else if( msg.chat_type == 1 ){
+                }else if( msg.chat_type == onlineChat.CHAT_TYPE_GROUP_CHAT ){
                     if( msg.to_id == chatStorage.sessions[i].to_id ){
                         Vue.set(chatStorage.sessions[i].messages,chatStorage.sessions[i].messages.length,msg);
                         chatStorage.sessions[i].lastMessage = msg;
@@ -464,6 +482,35 @@
                 session = chatStorage.sessions.pop();
             }
             chatStorage.sessions.unshift(session);
+        },
+        //有新的用户等待咨询客服
+        waitCustomerJoinTopic:function waitCustomerJoinTopic(msg){
+            var contact = {
+                chat_type: 2,
+                head_img: "",
+                name: "",
+                to_id: msg.uid
+            };
+            Vue.set( self.customer.contacts,self.customer.contacts.length,contact);
+        },
+        //客户已接入
+        customerJoinTopic: function customerJoinTopic(msg){
+            //客户收到的情况，这段代码有用
+            for( var i=0;i<self.customer.contacts.length;i++ ){
+                if( self.customer.contacts[i].to_id == msg.uid ){
+                    self.customer.contacts.splice(i,1);
+                }
+            }
+            //用户收到的情况，这段代码有用
+            if( typeof self.customer.session.uid != 'undefined' && self.customer.session.uid == msg.to_id ){
+                self.customer.session.to_id = msg.uid;
+                Vue.set(self.customer.session.messages,self.customer.session.messages.length,msg);
+            }
+
+        },
+        //新用户加入的欢迎消息
+        customerNewUserTopic: function customerNewUserTopic(msg){
+            Vue.set(self.customer.session.messages,self.customer.session.messages.length,msg);
         }
     }
     //在线聊天http的api
@@ -520,6 +567,26 @@
                     self.userinfo.head_img = data.data.userinfo.head_img;
                     self.wesocket_access_token = data.data.wesocket_access_token;
                     self.ws_addr = data.data.ws_addr;
+                    if( data.data.to_id == '' ){
+                        var to_id = 0;
+                    }else{
+                        var to_id = data.data.to_id;
+                    }
+                    var session = {
+                        uid:data.data.userinfo.uid,
+                        head_img:'',
+                        name:'',
+                        lastMessage:null,
+                        last_time:0,
+                        messages:[],
+                        online:1,
+                        to_id:to_id,
+                        chat_type:onlineChat.CHAT_TYPE_CUSTOMER
+                    };
+                    Vue.set(self.customer.sessions,0,session);
+                    self.customer.sessionIndex = 0;
+                    self.customer.session = self.customer.sessions[0];
+                    self.httpApi.getMessages(data.data.userinfo.uid,self.CHAT_TYPE_CUSTOMER);
                     if( typeof cb != 'undefined' ){
                         cb();
                     }
@@ -532,7 +599,7 @@
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/joinSession',{chat_type:chat_type,to_id:to_id},function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
-                if( chat_type == 1 ){
+                if( chat_type == self.CHAT_TYPE_GROUP_CHAT || chat_type == self.CHAT_TYPE_CUSTOMER ){
                     onlineChat.httpApi.getMessages(to_id,chat_type);
                 }
             });
