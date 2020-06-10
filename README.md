@@ -2,6 +2,8 @@
 #### 简介
 online_chat客户端提供了H5版，PC版，小程序版。
 
+说明：online_chat_client放到根目录；最好不要改目录名称；如果要改，则代码里面对应路径也要改。
+
 [demo示例](http://online_chat.blogts.com/client/chat/html5/)
 
 [online_chat官网地址](http://online_chat.blogts.com/)
