@@ -194,16 +194,19 @@
             chatStorage.sessionIndex = 0;
             var chat_type = chatStorage.contacts[contactIndex].chat_type;
             var to_id = chatStorage.contacts[contactIndex].to_id;
-            this.httpApi.joinSession(chat_type,to_id);
-            typeof cb == 'function' && cb(this.session);
+            this.httpApi.joinSession(chat_type,to_id,function(){
+                
+            });
+            typeof cb == 'function' && cb(chatStorage.session);
         },
         //选择会话
         selectSession:function selectSession(key,chat_type){
             var chatStorage = this.getChatStorage(chat_type);
             chatStorage.sessionIndex = key;
             chatStorage.session = chatStorage.sessions[key];
+            console.log( chatStorage.session.hasGetMessage );
             if( typeof chatStorage.session.hasGetMessage =='undefined' ){
-                chatStorage.sessions[key]['hasGetMessage'] = '1';
+                chatStorage.session['hasGetMessage'] = true;
             }else{
                 return;
             }
@@ -214,7 +217,13 @@
             var chatStorage = this.getChatStorage(chat_type);
             if( chatStorage.hasGetsessions == true ){
                 chatStorage.session = session;
-                onlineChat.httpApi.getMessages(session['to_id'],session['chat_type']);
+                if( typeof chatStorage.session.hasGetMessage =='undefined' ){
+                    chatStorage.session['hasGetMessage'] = true;
+                    onlineChat.httpApi.getMessages(session['to_id'],session['chat_type']);
+                }
+                if( chat_type == self.CHAT_TYPE_CONSULT ){
+                    self.httpApi.getConsultTime();
+                }
                 return;
             }
             //直接进入聊天页面
@@ -233,7 +242,10 @@
                             chatStorage.session = chatStorage.sessions[i];
                         }
                     }
-                    onlineChat.httpApi.getMessages(chatStorage.session['to_id'],chatStorage.session['chat_type']);
+                    self.httpApi.getMessages(chatStorage.session['to_id'],chatStorage.session['chat_type']);
+                    if( chat_type == self.CHAT_TYPE_CONSULT ){
+                        self.httpApi.getConsultTime();
+                    }
                     clearInterval(timer);
                 };
                 count++;
@@ -378,6 +390,10 @@
                 this.customerJoinTopic(message.msg);
             }else if( message.topic == 'cusomter_new_user' ){
                 this.customerNewUserTopic(message.msg);
+            }else if( message.topic == 'consult_not_start' ){
+                this.consultNotStart(message.msg);
+            }else if( message.topic == 'consult_time' ){
+                this.consultTime(message.msg);
             }
         },
         //上线
@@ -440,7 +456,7 @@
                     continue;
                 }
                 //
-                if( msg.chat_type == onlineChat.CHAT_TYPE_CHAT || msg.chat_type == onlineChat.CHAT_TYPE_CUSTOMER ){
+                if( msg.chat_type == onlineChat.CHAT_TYPE_CHAT || msg.chat_type == onlineChat.CHAT_TYPE_CUSTOMER || msg.chat_type == onlineChat.CHAT_TYPE_CONSULT ){
                     if( 
                         ( msg.uid == chatStorage.sessions[i].uid && msg.to_id == chatStorage.sessions[i].to_id )
                         || (msg.uid == chatStorage.sessions[i].to_id && msg.to_id == chatStorage.sessions[i].uid )
@@ -476,7 +492,8 @@
                     name: msg.name,
                     to_id:msg.uid,
                     uid: msg.to_id,
-                    online:1
+                    online:1,
+                    hasGetMessage:true
                 };
                 Vue.set( chatStorage.sessions,chatStorage.sessions.length,session );
                 session = chatStorage.sessions.pop();
@@ -511,6 +528,25 @@
         //新用户加入的欢迎消息
         customerNewUserTopic: function customerNewUserTopic(msg){
             Vue.set(self.customer.session.messages,self.customer.session.messages.length,msg);
+        },
+        //未开启咨询的消息
+        consultNotStart:function consultNotStart(msg){
+            Vue.set(self.consult.session.messages,self.consult.session.messages.length,msg);
+        },
+        //计时消息
+        consultTime:function consultTime(msg){
+            for( var i=0;i<self.consult.sessions.length;i++ ){
+                if( typeof self.consult.sessions[i].consult_time != 'undefined' &&  typeof self.consult.sessions[i].consult_time.id != 'undefined' ){
+                    if( msg.consult_time.id == self.consult.sessions[i].consult_time.id ){
+                        if( msg.status == 3 ){
+                            Vue.set(self.consult.sessions[i],'consult_time',[]);
+                        }else{
+                            Vue.set(self.consult.sessions[i],'consult_time',msg.consult_time);
+                        }
+                        
+                    }
+                }
+            }
         }
     }
     //在线聊天http的api
@@ -607,7 +643,12 @@
         //获取所有聊天会话
         getSessions:function getSessions(chat_type,cb){
             var chatStorage = self.getChatStorage(chat_type);
-            this.httpGet(self.httpApiHost+'/index.php/online_chat/session/index',function(data){
+            if( chat_type == self.CHAT_TYPE_CONSULT ){
+                var url = self.httpApiHost+'/index.php/online_chat/session/index?user_type=2';
+            }else{
+                var url = self.httpApiHost+'/index.php/online_chat/session/index';
+            }
+            this.httpGet(url,function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
                 for( var i=0;i<data.data.length;i++ ){
@@ -642,6 +683,112 @@
                 data = data.data;
                 for( var i=0;i<data.length;i++ ){
                     Vue.set(chatStorage.session.messages,chatStorage.session.messages.length,data[i]);
+                }
+            });
+        },
+        //获取咨询师
+        getConsults:function getConsults(){
+            this.httpGet(self.httpApiHost+ '/index.php/online_chat/session/getConsults',function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                data = data.data;
+                for( var i=0;i<data.length;i++ ){
+                    Vue.set(onlineChat.consult.contacts,onlineChat.consult.contacts.length,data[i]);
+                }
+            });
+        },
+        //获取咨询时长
+        getConsultTime:function getConsultTime(){
+            $.get('/index.php/online_chat/consult_time/getConsultTime?to_id='+self.consult.session['to_id'],function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                data = data.data;
+                Vue.set(self.consult.session,'showFreeButton',0);
+                Vue.set(self.consult.session,'consult_time',data.consult_time);
+                Vue.set(self.consult.session,'freeConsult',data.freeConsult);
+                if( typeof self.consult.session.consult_time.status == 'undefined' || self.consult.session.consult_time.status == 3 ){
+                    if( self.consult.session.freeConsult == 1 ){ //显示免费咨询按钮
+                        Vue.set(self.consult.session,'showFreeButton',1);
+                    }
+                }
+            });
+        },
+        //购买时长
+        addConsult:function addConsult(){
+            if( typeof self.consult.session.chat_type == 'undefined' ){
+                alert('请选择聊天！');
+                return;
+            }
+            this.httpPost(self.httpApiHost+ '/index.php/online_chat/consult_time/addConsult',{to_id:self.consult.session.to_id},function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                data = data.data;
+                Vue.set(self.consult.session,'consult_time',data.consult_time);
+            });
+        },
+        //添加免费咨询时长
+        addFreeConsult:function addFreeConsult(){
+            if( typeof self.consult.session.chat_type == 'undefined' ){
+                alert('请选择聊天！');
+                return;
+            }
+            this.httpPost(self.httpApiHost+ '/index.php/online_chat/consult_time/addFreeConsult',{to_id:self.consult.session.to_id},function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                data = data.data;
+                Vue.set(self.consult.session,'showFreeButton',0);
+                Vue.set(self.consult.session,'consult_time',data.consult_time);
+            });
+        },
+        //延时咨询
+        delayedDuration:function delayedDuration(){
+            delayed_duration = 1800;
+            this.httpPost(self.httpApiHost+ '/index.php/online_chat/consult_time/delayedDuration',{consult_time_id:onlineChat.consult.session.consult_time.id,delayed_duration:delayed_duration},function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                if( data.code == 200 ){
+                    self.consult.session.consult_time.duration_count += delayed_duration;
+                }
+            });
+        },
+        //开始咨询
+        startConsult:function startConsult(){
+            if( typeof self.consult.session.chat_type == 'undefined' ){
+                alert('请选择聊天！');
+                return;
+            }
+            if( typeof self.consult.session.consult_time == 'undefined' ){
+                console.log('session[consult_time]不存在！');
+                return;
+            }
+            if( typeof self.consult.session.consult_time.id == 'undefined' ){
+                console.log('session[consult_time][consult_time_id]不存在！');
+                return;
+            }
+            this.httpPost(self.httpApiHost+ '/index.php/online_chat/consult_time/startConsult',{consult_time_id:onlineChat.consult.session.consult_time.id},function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                if( data.code == 200 ){
+                    self.consult.session.consult_time.status = 1;
+                }else{
+                    alert(data.msg);
+                }
+            });
+        },
+        //暂停咨询
+        suspendConsult:function suspendConsult(){
+            if( typeof self.consult.session.chat_type == 'undefined' ){
+                alert('请选择聊天！');
+                return;
+            }
+            this.httpPost(self.httpApiHost+ '/index.php/online_chat/consult_time/suspendConsult',{consult_time_id:onlineChat.consult.session.consult_time.id},function(data){
+                data = $.parseJSON(data);
+                self.debug && console.log(data);
+                if( data.code == 200 ){
+                    self.consult.session.consult_time.status = 2;
+                }else{
+                    self.consult.session.consult_time.status = 2;
+                    alert(data.msg);
                 }
             });
         },
@@ -725,7 +872,29 @@
                     cb(data);
                 }
             });
+        },
+        httpPost:function httpGet(url,data,cb){
+            if( typeof data == 'function' && typeof cb == 'undefined' ){
+                cb = data;
+                data = {};
+            }
+            var token = sessionStorage.getItem('online_chat_phpsessid');
+            if( token == null ){
+                token = '';
+            }
+            $.ajax({
+                type:'POST',
+                url:url,
+                data:data,
+                headers:{
+                    token:token,
+                },
+                success:function(data){
+                    cb(data);
+                }
+            });
         }
+
     }
     //在线聊天的工具方法
     function helper(){
@@ -834,6 +1003,28 @@
         formatNumber: function formatNumber(n) {
             n = n.toString()
             return n[1] ? n : '0' + n
+        },
+        timeToStr:function(sec){
+            $hour = parseInt ( (sec / 3600) );
+            $min = parseInt( (sec % 3600 ) / 60  );
+            $sec = sec % 3600 % 60;
+            if( $hour < 10 ){
+                $hour = '0' + $hour;
+            }else{
+                $hour = $hour.toString();
+            }
+            if( $min < 10 ){
+                $min = '0' + $min;
+            }else{
+                $min = $min.toString();
+            }
+            if( $sec < 10 ){
+                $sec = '0' + $sec;
+            }else{
+                $sec = $sec.toString();
+            }
+            //console.log( $hour + ':' + $min + ':' + $sec );
+            return $hour + ':' + $min + ':' + $sec;
         }
     }
     

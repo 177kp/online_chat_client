@@ -103,6 +103,7 @@ div{
     width:1.693rem;
     height:100%;
     vertical-align: middle;
+    position:absolute
 }
 .contacts .cols-8{
     right:0.347rem;
@@ -201,7 +202,6 @@ div{
     top:1.4444rem;
     bottom:1.4444rem;
     position:fixed;
-    top:0;
     left:0;
     right:0
 }
@@ -736,4 +736,20 @@ div{
     background:#08BF62;
     color:white;
     display:none;
+}
+.chat-consult-tool{
+    display:inline-block;
+    position:absolute;
+    top:1.44444rem;
+    z-index:9999;
+    background-color: #f2ecee;
+    width:100%;
+    line-height:1.4rem;
+    text-align:center;
+    font-size: 0.4rem;
+}
+.chat-consult-tool button{
+    line-height:0.6rem;
+    padding:0 0.2rem;
+    font-size:0.4rem
 }

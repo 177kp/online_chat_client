@@ -1,0 +1,644 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <title>test</title>
+    <script type="text/javascript" src="../static/js/vue.js"></script>
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+    <script src="../static/js/flex.js"></script>
+    <script src="../static/js/vue-router.js"></script>
+    <script src="../static/js/vuex.js"></script>
+    <script type="text/javascript" src="../static/js/online_chat_js_sdk.js"></script>
+    <script type="text/javascript" src="../static/js/vconsole.min.js"></script>
+    <script type="text/javascript" src="../static/js/wangEditor/wangEditor_modify.min.js"></script>
+    <script type="text/javascript" src="../static/js/face.js"></script>
+    <script type="text/javascript" src="../static/js/layer/layer.js"></script>
+    <link rel="stylesheet" href="../static/css/mobile.css"> 
+</head>
+<style type="text/css">
+    .chat-message{
+        top:2.8444rem;
+    }
+</style>
+<body>
+
+    <div id="app">
+        <router-view></router-view>
+    </div>
+</body>
+    <script type="text/x-template" id="sessions">
+        <div>
+            <div class="list">
+                <ul class="sessions">
+                    <li v-for="(item,key) in $store.state.onlineChat.consult.sessions" 
+                        @click="goto(item)" @touchend="">
+                        <div class="cols-2">
+                            <img class="avatar" :src="$store.state.onlineChat.helper.getHeadImg(item.head_img,item.online)">
+                        </div>
+                        <div class="cols-8 name-div" >
+                                <p class="name">{{item.name}}</p>
+                                <p class="last-msg" v-html="last_msg( item.lastMessage )"></p>
+                        </div>
+                        <span  class="last-msg-time">
+                            {{ item.lastMessage != null ? $store.state.onlineChat.helper.sessionFormatTime(item.lastMessage.ctime*1000) : '' }}
+                        </span>
+                        <div style="clear:both;width:100%;"></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="side-tab">
+                <router-link to="/">
+                    <div class="st-item tab-active" >
+                        <img src="../static/img/session-g.png" /><br />
+                        <span style="color:#3CAF36">聊天</span>
+                    </div>
+                </router-link>
+                <router-link to="/contact">
+                    <div class="st-item" >
+                        <img src="../static/img/contact-b.png" /><br />
+                        <span>联系人</span>
+                    </div>
+                </router-link>
+                <router-link to="/my">
+                    <div class="st-item" >
+                        <img src="../static/img/my-b.png" /><br />
+                        <span>我</span>
+                    </div>
+                </router-link>
+            </div>
+        </div>
+        </script>
+        <script type="text/x-template" id="contacts">
+            <div>
+                <div class="list" style="padding-bottom:3.6rem">
+                    <ul class="contacts">
+                        <li v-for="(item,key) in $store.state.onlineChat.consult.contacts" @click="goto(key)">
+                            <div class="cols-2">
+                                <img class="avatar" :src="item.head_img">
+                            </div>
+                            <div class="cols-8">
+                                <span class="name">{{item.name}}</span>
+                            </div>
+                            <div style="clear:both"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="side-tab">
+                    <router-link to="/">
+                        <div class="st-item" >
+                            <img src="../static/img/session-b.png" /><br />
+                            <span>聊天</span>
+                        </div>
+                    </router-link>
+                    <router-link to="/contact  tab-active">
+                        <div class="st-item" >
+                            <img src="../static/img/contact-g.png" /><br />
+                            <span style="color:#3CAF36">联系人</span>
+                        </div>
+                    </router-link>
+                    <router-link to="/my">
+                        <div class="st-item" >
+                            <img src="../static/img/my-b.png" /><br />
+                            <span>我</span>
+                        </div>
+                    </router-link>
+                </div>
+            </div>
+        </script>
+        <script type="text/x-template" id="my">
+            <div>
+                <div class="my-info">
+                    <img :src="$store.state.onlineChat.userinfo.head_img" v-if="$store.state.onlineChat.userinfo.head_img != ''?true:false"/>
+                    <span v-html="$store.state.onlineChat.userinfo.name"></span>
+                </div>
+                <div class="side-tab">
+                    <router-link to="/">
+                        <div class="st-item" >
+                            <img src="../static/img/session-b.png" /><br />
+                            <span>聊天</span>
+                        </div>
+                    </router-link>
+                    <router-link to="/contact">
+                        <div class="st-item" >
+                            <img src="../static/img/contact-b.png" /><br />
+                            <span >联系人</span>
+                        </div>
+                    </router-link>
+                    <router-link to="/my">
+                        <div class="st-item  tab-active" >
+                            <img src="../static/img/my-g.png" /><br />
+                            <span style="color:#3CAF36">我</span>
+                        </div>
+                    </router-link>
+                </div>
+            </div>
+        </script>
+        <script type="text/x-template" id="main">
+                <div class="main" >
+                        <div class="chat-title">
+                            <img src="../static/img/goback.png" @click.stop="goBack" @touchend.stop="goBack" />
+                            <span>{{$store.state.onlineChat.consult.session.name}}</span>
+                        </div>
+                        <div class="chat-consult-tool">
+                            <span v-show="$store.state.free_duration_count_display">免费时间:{{free_duration_count_show}}</span>
+                            <span v-show="$store.state.duration_count_display">剩余时间:{{duration_count_show}}</span>
+                            <span >{{consult_status}}</span>
+                        </div>
+                        <div class="chat-message" id="message"  >
+                            <ul >
+                                <li v-for="(item,key) in $store.state.onlineChat.consult.session.messages" :class="{self:item.uid==$store.state.onlineChat.userinfo.uid}">
+                                    <p class="cm-time" v-if="key==0 || item.ctime-$store.state.onlineChat.consult.session.messages[key-1].ctime > 60" >
+                                        <span>{{ $store.state.onlineChat.helper.messageFormatTime(item.ctime*1000) }}</span>
+                                    </p>
+                                    <div>
+                                        <img class="cm-avatar" :src="item.head_img" />
+                                        <!--文本，富文本-->
+                                        <div v-if="item.msg_type==0 || item.msg_type==4" class="cm-msg cm-bg-color" v-html="item.msg">
+                                        </div>
+                                        <!--图片-->
+                                        <div v-if="item.msg_type==1" class="cm-msg cm-img">
+                                            <img :src="item.msg" onload="$('.chat-message').scrollTop(10000000);" />
+                                        </div>
+                                        <!--声音-->
+                                        <div v-if="item.msg_type==2" class="cm-msg cm-bg-color cm-sound" :sound-src="item.msg.path" :style="{width:parseInt(70+(item.msg.duration * 5)).toString() + 'px'}">
+                                            <img v-if="item.uid == $store.state.onlineChat.userinfo.uid" class="sound-img" src="../static/img/sound1.png" />
+                                            <img v-if="item.uid != $store.state.onlineChat.userinfo.uid" class="sound-img" src="../static/img/sound.png" />
+                                            <span class="sound-duration" >{{parseInt(item.msg.duration)}}"</span>
+                                        </div>
+                                        <!--视频-->
+                                        <div v-if="item.msg_type==3" class="cm-msg cm-video" :video-src="item.msg.path">
+                                            <img :src="item.msg.video_cover_img"  class="video-cover-img" onload="$('.chat-message').scrollTop(10000000);"/>
+                                            <img src="../static/img/play.png" class="video-play-img"/>
+                                        </div>
+                                        <!--文件-->
+                                        <div v-if="item.msg_type==5" class="cm-msg cm-file">
+                                            <div class="mf-left"> 
+                                                <img src="../static/img/file.jpg"/>
+                                            </div>
+                                            <div class="mf-right">
+                                                <p class="mf-filename">{{item.msg.filename}}</p>
+                                                <p class="mf-detail">
+                                                    <span class="mf-size">{{$store.state.onlineChat.helper.formatFilesize(item.msg.filesize)}}</span>
+                                                    <span class="mf-download"><a :href="$store.state.onlineChat.helper.getFileDownloadUrl(item.msg.path,item.msg.filename)" target="_bank" style="color:#35ac2f;text-decoration: none">下载</a></span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div style="clear:both"></div>
+                        </div>
+                        <div class="text-content">
+                            <div id="chat-tool-bar">
+                                <div name="msg" placeholder="请输入内容" id="editor" @keyup.enter="sendMsg()"></div>
+                            </div>
+                            <div class="file-tool-bar" v-show="$store.state.fileToolShow">
+                                <div class="ftb-item">
+                                    <img src="../static/img/photo.png" />
+                                    <span>相册</span>
+                                    <input type="file" name="file" accept="image/*" onchange="uploadMediaFile(this)">
+                                </div>
+                                <div class="ftb-item">
+                                    <img src="../static/img/take-img.png" />
+                                    <span>拍照</span>
+                                    <input type="file" name="file" accept="image/*" capture onchange="uploadMediaFile(this)">
+                                </div>
+                                <div class="ftb-item">
+                                    <img src="../static/img/take-video.png" />
+                                    <span>视频</span>
+                                    <input type="file" name="file" accept="video/*" capture onchange="uploadMediaFile(this)">
+                                </div>
+                                <div class="ftb-item">
+                                    <img src="../static/img/tool-bar-file.png" />
+                                    <span>文件</span>
+                                    <input type="file" name="file" onchange="uploadMediaFile(this)">
+                                </div>
+                            </div>
+                            <div class="file-tool-mask" v-show="$store.state.fileToolShow"></div>
+                        </div>
+                    </div>
+        </script>
+        <audio controls style="display:none">
+            <source src="../static/mp3/online.mp3" type="audio/mpeg">
+            您的浏览器不支持 audio 元素。
+        </audio>
+        <audio controls style="display:none" id="chat-sound">
+            <source src="" type="audio/mpeg">
+            您的浏览器不支持 audio 元素。
+        </audio>
+<script>
+
+    //实例化sdk
+    var onlineChat = new online_chat_js_sdk({
+        httpApiHost:'',
+        noLoginJumpUrl:'index.html',
+        alertMsg:function(msg){
+            layer.msg(msg);
+        }
+    });
+    onlineChat.httpApi.getSessions(onlineChat.CHAT_TYPE_CONSULT);
+    //获取访问websocket服务的token
+    onlineChat.start();
+    //聊天会话列表组件
+    const sessionsHtml=  Vue.component('my-component', {
+        template: '#sessions',
+        methods:{
+            'last_msg': function (message) {
+                if( message != null && message != '' ){
+                    if( message.name == null ){
+                        message.name = '';
+                    }
+                    var msg = message.msg;
+                    if( message.msg_type == onlineChat.MSG_TYPE_IMG ){
+                        msg = '[图片]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_VIDEO ){
+                        msg = '[视频]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_SOUND ){
+                        msg = '[音频]';
+                    }else if( message.msg_type == onlineChat.MSG_TYPE_FILE ){
+                        msg = '[文件]';
+                    }
+                    if( message.uid != onlineChat.userinfo.uid ){
+                        if( message.msg_type == onlineChat.MSG_TYPE_RICH_TXT ){
+                            return '<p>[' + message.name + ']:' + msg.substr(3);
+                        }else{
+                            return '[<span>'+message.name+'</span>]：' + msg;
+                        }
+                    }else{
+                        return msg;
+                    }
+                }else{
+                    return '';
+                }
+            },
+            goto(session){
+                this.$router.push({"name":"main",params:{session}});
+            }
+        }
+    });
+    //联系人列表组件
+    const contactsHtml= Vue.component('my-component', {
+        template: '#contacts',
+        methods:{
+            goto(index){
+                var that = this;
+                onlineChat.joinSession(index,onlineChat.CHAT_TYPE_CONSULT,function(session){
+                    that.$router.push({"name":"main",params:{session}});
+                });
+            }
+        }
+    });
+    //主页组件
+    const mainHtml= Vue.component('my-component', {
+        template: '#main',
+        methods:{
+            goBack(){
+                this.$router.push('/');
+            },
+            sendMsg(){
+                sendMsg();
+            }
+        },
+        computed:{
+            free_duration_count_show:function(){
+                if( typeof onlineChat.consult.session.consult_time != "undefined" && typeof onlineChat.consult.session.consult_time.status != "undefined" ){
+                    if( onlineChat.consult.session.consult_time.free_duration_count > 0 ){
+                        store.state.free_duration_count_display = true;
+                        return onlineChat.helper.timeToStr( onlineChat.consult.session.consult_time.free_duration_count );
+                    }else{
+                        store.state.free_duration_count_display = false;
+                    }
+                }else{
+                    store.state.free_duration_count_display = false;
+                }
+            },
+            duration_count_show:function(){
+                if( typeof onlineChat.consult.session.consult_time != "undefined" && typeof onlineChat.consult.session.consult_time.status != "undefined" ){
+                    if( onlineChat.consult.session.consult_time.duration_count > 0 ){
+                        store.state.duration_count_display = true;
+                        return onlineChat.helper.timeToStr( onlineChat.consult.session.consult_time.duration_count );
+                    }else{
+                        store.state.duration_count_display = false;
+                    }
+                }else{
+                    store.state.free_duration_count_display = false;
+                }
+            },
+            consult_status:function(){
+                if( typeof onlineChat.consult.session.consult_time == "undefined" ){
+                    return;
+                }
+                if( typeof onlineChat.consult.session.consult_time.status == "undefined" ){
+                    return '未开始';
+                }
+                if( onlineChat.consult.session.consult_time.status == 0 ){
+                    return '未开始';
+                }else if( onlineChat.consult.session.consult_time.status == 1 ){
+                    return '咨询中';
+                }else if( onlineChat.consult.session.consult_time.status == 2 ){
+                    return '暂停中';
+                }else if( onlineChat.consult.session.consult_time.status == 3 ){
+                    return '已完成';
+                }
+            }
+        },
+        directives: {
+            // 发送消息后滚动到底部
+            'scroll-bottom'() {
+                if (typeof this.vm != "undefined") {
+                    this.vm.$nextTick(() => {
+                        var elem = document.getElementById('message');
+                        var scrollTop = elem.scrollHeight - elem.clientHeight;
+                        elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+                    });
+                }
+            }
+        },
+        beforeRouteEnter : (to, from, next) => {
+            if( typeof to.params.session == 'undefined'  ){
+                var session = sessionStorage.getItem('sessionInfo');
+                //console.log(store.state.sessions);
+                if( typeof session == "undefined" || session == null){
+                    window.location.href = window.location.href.substr(0,window.location.href.length-6);
+                    return;
+                }
+                var session = $.parseJSON(session);
+            }else{
+                var session = to.params.session;
+                sessionStorage.setItem('sessionInfo', JSON.stringify(to.params.session));
+            }
+            //console.log( store.state.session );
+            onlineChat.beforeLoadChatPage(session,onlineChat.CHAT_TYPE_CONSULT);
+            next();
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                // Code that will run only after the
+                // entire view has been rendered
+                editor.create();
+                $('.w-e-toolbar').append(`<div class="w-e-menu" id="upload"><img src="../static/img/plus.png" /></div>
+                <div id="send-msg" onclick="sendMsg()">发送</div>`);
+                $('.w-e-toolbar').before(`<button class="sound-btn" id="sound-btn" >
+                                    <img src="../static/img/sound.png" />
+                                    <input type="file" name="file" accept="audio/*" capture onchange="uploadMediaFile(this)">
+                                </button>`);
+                $('.w-e-icon-happy').click(function(){
+                    store.state.fileToolShow = false;
+                });
+                
+                var textContentHeight;
+                var mutationObserver = new MutationObserver(function(mutations) {
+                    if( mutations.length == 1 && mutations[0].target.localName == 'ul' ){
+                        $('.chat-message').scrollTop(10000000);
+                    }
+                    var h = $('.text-content')[0].offsetHeight;
+                    if( textContentHeight == h ){
+                        return;
+                    }
+                    textContentHeight = h;
+                    $('.chat-message').css( 'bottom', h);
+                    $('.chat-message').scrollTop(10000000);
+                });
+                mutationObserver.observe($('.text-content')[0], {
+                    attributes: true,
+                    characterData: true,
+                    childList: true,
+                    subtree: true,
+                    attributeOldValue: true,
+                    characterDataOldValue: true
+                });
+                mutationObserver.observe($('.chat-message')[0], {
+                    attributes: true,
+                    characterData: true,
+                    childList: true,
+                    subtree: true,
+                    attributeOldValue: true,
+                    characterDataOldValue: true
+                });
+                $('.chat-message').scrollTop(10000000);
+            })
+        }
+    });
+    //主页组件
+    const myHtml= Vue.component('my-component', {
+        template: '#my',
+        methods:{
+        }
+    });
+    //路由
+    const routes = [
+        { path: '/', component: sessionsHtml ,name:'home'},
+        { path: '/contact', component: contactsHtml,name:'contact'},
+        { path: '/my', component: myHtml,name:'my'},
+        { path: '/main', component: mainHtml ,name:'main'}
+        
+    ]
+    const router = new VueRouter({
+        routes // (缩写) 相当于 routes: routes
+    })
+    
+    //Vuex
+    const store = new Vuex.Store({
+        state: {
+            onlineChat:onlineChat,
+            fileToolShow:false,
+            free_duration_count_display:false,
+            duration_count_display:false
+        }
+        
+    });
+
+    var vm = new Vue({
+        router,
+        store,
+        directives: {
+            // 发送消息后滚动到底部
+            'scroll-bottom'() {
+                if (typeof this.vm != "undefined") {
+                    this.vm.$nextTick(() => {
+                        var elem = document.getElementById('message');
+                        var scrollTop = elem.scrollHeight - elem.clientHeight;
+                        elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+                    });
+                }
+            }
+        }
+    }).$mount('#app');
+
+    function sendMsg() {
+        var message = $('input[name=msg]').val();
+        if (typeof onlineChat.consult.session.chat_type == 'undefined') {
+            alert('请选择聊天！');
+            return;
+        }
+        var message = editor.txt.html();
+        if( /<img[^>]*>/.test( message ) ){
+            message = editor.txt.html();
+            var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
+            message = message.substr(0,message.length-8) + '</p>';
+        }else{
+            message = editor.txt.text();
+            var msg_type = onlineChat.MSG_TYPE_TXT;
+        }
+        if( message == '' ){
+            alert('消息不能为空！');
+            return;
+        }
+
+        onlineChat.socketClient.sendMessage({
+            msg:message,
+            msg_type:msg_type,
+            chat_type:onlineChat.consult.session.chat_type
+        });
+        editor.txt.html('');
+        editor.customConfig.onchange();
+    }
+
+    //var vConsole = new VConsole(); 
+    var E = window.wangEditor;
+    var editor = new E('#editor');
+    
+    // 自定义菜单配置
+    editor.customConfig.menus = [
+        'emoticon',  // 表情
+    ];
+    editor.customConfig.onchange = function (html) {
+        // html 即变化之后的内容
+        //console.log(html);
+        if( editor.txt.html() == "<p><br></p>"){
+            $('#send-msg').hide();
+            $('#upload').show();
+            $('.w-e-menu').css('margin-left','0.3rem');
+            $('.w-e-text-container').css('width','6rem');
+        }else{
+            $('#send-msg').show();
+            $('#upload').hide();
+            $('.w-e-menu').css('margin-left','-0.6rem');
+            $('.w-e-text-container').css('width','5.2rem');
+        }
+    }
+    editor.customConfig.emotions = [
+            {
+                // tab 的标题
+                title: '默认',
+                // type -> 'emoji' / 'image'
+                type: 'image',
+                // content -> 数组
+                content: onlineChatFaceImgs
+            },
+            {
+                // tab 的标题
+                title: 'emoji',
+                // type -> 'emoji' / 'image'
+                type: 'emoji',
+                // content -> 数组
+                content: '😀 😃  😁 😆 😅 😂 😊 😇 🙂 🙃 😉 😌 😍 😘 😗 😙 😚 😋 😜 😎 😏 😒 😞 😔 😟 😕 😣 😖 😫 😩 😤 😠 😶 😐 😑 😯 😦 😧 😮 😲 😵 😳 😱 😨 😰 😢 😥 😭 😓 😪 😴 🙄 🤔 😬 🤐'.split(/\s/)
+            },
+            {
+                // tab 的标题
+                title: 'emoji手势',
+                // type -> 'emoji' / 'image'
+                type: 'emoji',
+                // content -> 数组
+                content: ['🙌', '👏', '👋', '👍', '👎', '👊', '✊', '️👌', '✋', '👐', '💪', '🙏', '️👆', '👇', '👈', '👉', '🖕', '🖐', '🤘']
+            }
+        ]
+    $('body').on('click','#upload',function(){
+        store.state.fileToolShow = true;
+    });
+    $('body').on('click','.file-tool-mask',function(){
+        store.state.fileToolShow = false;
+    });
+    function uploadMediaFile(obj){
+
+        if( typeof onlineChat.consult.session.chat_type == 'undefined' ){
+            alert('请选择聊天！');
+            return;
+        }
+        store.state.fileToolShow = false;
+        var file = $(obj)[0].files[0];
+        onlineChat.httpApi.uploadFile({
+            file:file,
+            chat_type:onlineChat.consult.session.chat_type
+        });
+    }
+    $('body').on('click','.cm-img img',function(){
+        var index = 0;
+        var imgs = [];
+        for( var i=0;i<store.state.session.messages.length;i++ ){
+            if( store.state.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( store.state.session.messages[i].msg == $(this).attr('src') ){
+                    index = imgs.length;
+                }
+                imgs.push({
+                    "alt": "",
+                    "pid": i, //图片id
+                    "src": store.state.session.messages[i].msg, //原图地址
+                    "thumb": "" //缩略图地址
+                });
+            }
+        }
+        //console.log(imgs);
+        layer.photos({
+            photos: {
+                "title": "", //相册标题
+                "id": 123, //相册id
+                "start": index, //初始显示的图片序号，默认0
+                "data":imgs
+            }
+            ,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
+            ,shade: [0.9,'#000']
+            ,area:['100%','auto']
+            ,closeBtn:true
+        });
+    });
+    $('body').on('click','.cm-sound',function(){
+        var sound_src = $(this).attr('sound-src');
+        $('#chat-sound').attr('src',sound_src);
+        $("#chat-sound")[0].play();
+    });
+    
+    $('body').on('click','.cm-video',function(){
+        var video_src = $(this).attr('video-src');
+        if( /VivoBrowser/.test(navigator.userAgent) ){
+            var videoHeight = '94%';
+        }else{
+            var videoHeight = '100%';
+        }
+        layer.open({
+            title:false,
+            type: 1,
+            skin: 'layui-layer-demo', //样式类名
+            closeBtn: 2, //不显示关闭按钮
+            area:['100%','100%'],
+            anim: 2,
+            shadeClose: true, //开启遮罩关闭
+            content: `<div style="background:#000;position:absolute;width:100%;height:100%">
+                        <video controls="controls" autoplay="autoplay" width="100%" height="`+videoHeight+`" style="background:#000;position:fixed;">
+                            <source src="`+video_src+`" type="video/mp4" />
+                        </video>
+                    </div>`
+        });
+    });
+    $(window).resize(function(){
+        $('.chat-message').scrollTop(10000000);
+    });
+    setInterval( function(){
+        if( typeof onlineChat.consult.session.consult_time == 'undefined' ){
+            return;
+        }
+        if( typeof onlineChat.consult.session.consult_time.id == 'undefined' ){
+            return;
+        }
+        if( onlineChat.consult.session.consult_time.status == 1 ){
+            if( onlineChat.consult.session.consult_time.free_duration_count > 0 ){
+                onlineChat.consult.session.consult_time.free_duration_count--;
+            }else if( onlineChat.consult.session.consult_time.duration_count > 0 ){
+                onlineChat.consult.session.consult_time.duration_count--;
+            }
+        }
+    },1000);
+</script>
+
+</html>
