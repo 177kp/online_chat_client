@@ -72,12 +72,16 @@
                         <div :class="{self:item.uid == onlineChat.userinfo.uid}">
                             <!--头像-->
                             <img class="cm-avatar" width="30" height="30" :src="item.head_img" />
-                            <!--文本，富文本-->
-                            <div v-if="item.msg_type==0 || item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
+                            <!--文本-->
+                            <div v-if="item.msg_type==0" class="cm-msg cm-txt cm-bg-color">
+                                <pre>{{item.msg}}</pre>
+                            </div>
+                            <!--富文本-->
+                            <div v-if="item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
                             </div>
                             <!--图片-->
                             <div v-if="item.msg_type==1" class="cm-msg cm-img">
-                                <img :src="item.msg" />
+                            <img :src="item.msg" :onload="imgLoadScrollBottom()" />
                             </div>
                             <!--声音-->
                             <div v-if="item.msg_type==2" class="cm-msg cm-bg-color cm-sound" :sound-src="item.msg.path" :style="{width:parseInt(70+(item.msg.duration * 5)).toString() + 'px'}">
@@ -87,7 +91,7 @@
                             </div>
                             <!--视频-->
                             <div v-if="item.msg_type==3" class="cm-msg cm-video" :video-src="item.msg.path">
-                                <img :src="onlineChat.httpApiHost+item.msg.video_cover_img"  class="video-cover-img" />
+                                <img :src="onlineChat.httpApiHost+item.msg.video_cover_img"  class="video-cover-img"  :onload="imgLoadScrollBottom()"/>
                                 <img src="../static/img/play.png" class="video-play-img"/>
                             </div>
                             <!--文件-->
@@ -179,6 +183,14 @@
                 }else{
                     return '';
                 }
+            },
+            imgLoadScrollBottom:function(){
+                setTimeout(function(){
+                    var elem = document.getElementById('chat-message');
+                    var scrollTop = elem.scrollHeight - elem.clientHeight;
+                    $(elem).slimScroll({ scrollTo: scrollTop.toString() + 'px' });
+                    elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+                },100);
             }
         },
         directives: {
@@ -211,7 +223,8 @@
             return;
         }
         var message = editor.txt.html();
-        if( /<img[^>]*>/.test( message ) ){
+        var lines = editor.txt.getJSON();
+        if( /<img[^>]*>/.test( message ) || /<br\/>/.test(message) || lines.length > 1){
             var message = editor.txt.html();
             var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
         }else{
@@ -234,7 +247,7 @@
             height: '460px'
         });
         $('.chat-message').slimScroll({
-            height: '370px'
+            height: '360px'
         });
         $('.w-e-text').slimScroll({
             height: '90px'

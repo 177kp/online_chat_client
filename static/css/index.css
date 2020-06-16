@@ -105,7 +105,9 @@ footer {
     border-bottom: 1px solid #292C33;
     cursor: pointer;
     transition: background-color .1s;
-    position:relative
+    position:relative;
+    max-height:40px;
+    overflow:hidden;
 }
 .list li:hover{
     background-color: rgba(255, 255, 255, 0.1);
@@ -134,7 +136,9 @@ footer {
     line-height:22px;
     margin-left:5px;
     width:160px;
-    white-space: nowrap
+    white-space: nowrap;
+    max-height: 20px;
+    overflow: hidden;
 }
 
 .list .last-msg-time{
@@ -150,10 +154,11 @@ footer {
 }
 
 .chat-message {
-    padding: 10px 15px;
+    padding: 0px 15px;
     overflow-y: scroll;
     height:380px;
-    padding-bottom:0px
+    padding-bottom:0px;
+    margin-top:10px
 }
 
 .chat-message li {
@@ -280,7 +285,7 @@ footer {
 }
 .cm-img img{
     cursor:pointer;
-    max-width:400px;
+    max-width:260px;
     border-radius: 5px;
 }
 
