@@ -28,7 +28,7 @@
             <div class="list">
                 <ul class="sessions">
                     <li v-for="(item,key) in $store.state.onlineChat.chat.sessions" 
-                        @click="goto(item)" @touchend="">
+                        @click="goto(item)" @touchend="" :class="{online:item.online,offline:!item.online}">
                         <div class="cols-2">
                             <img class="avatar" :src="$store.state.onlineChat.helper.getHeadImg(item.head_img,item.online)">
                         </div>

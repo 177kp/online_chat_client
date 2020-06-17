@@ -37,7 +37,7 @@
             </div>
             <div class="list">
                 <ul class="sessions" v-show="sideTab=='session'?true:false">
-                    <li v-for="(item,key) in onlineChat.chat.sessions" :class="onlineChat.chat.sessionIndex == key ? 'active':''" @click="onlineChat.selectSession(key,1)">
+                    <li v-for="(item,key) in onlineChat.chat.sessions" :class="{active:onlineChat.chat.sessionIndex == key,online:item.online,offline:!item.online}" @click="onlineChat.selectSession(key,1)">
                         <img class="avatar"  :src="onlineChat.helper.getHeadImg(item.head_img,item.online)"> 
                         <div>
                             <p class="name">{{item.name}}</p>
@@ -140,6 +140,11 @@
         noLoginJumpUrl:'index.html',
         alertMsg:function(msg){
             layer.msg(msg);
+        },
+        sle_scroll_top:function(){
+            var elem = $('#app .list')[0];
+            $(elem).slimScroll({ scrollTo: '0px' });
+            elem.scrollTop = 0;
         }
     });
     onlineChat.httpApi.getSessions(onlineChat.CHAT_TYPE_CHAT);
@@ -153,8 +158,12 @@
         },
         methods: {
             joinSession:function(contactIndex){
-                onlineChat.joinSession(contactIndex,onlineChat.CHAT_TYPE_CHAT);
                 this.sideTab = 'session';
+                onlineChat.joinSession(contactIndex,onlineChat.CHAT_TYPE_CHAT,function(){
+                    var elem = $('#app .list')[0];
+                    $(elem).slimScroll({ scrollTo: '0px' });
+                    elem.scrollTop = 0;
+                });
             },
             'last_msg':function(message){
                 if( message != null && message != '' ){
@@ -346,6 +355,25 @@
             chat_type:onlineChat.chat.session.chat_type
         });
         $('#upload').html($('#upload').html());
+    });
+    $('#editor').keydown(function(event){
+        if( event.ctrlKey && event.keyCode == 13 ){
+            editor.txt.html(editor.txt.html()+'<p><br/></p>');
+            return;
+        }
+        if( event.keyCode == 13 ){
+            sendMsg();
+            editor.txt.html('');
+            return;
+        }
+    }).keyup( function(event){
+        if( event.ctrlKey && event.keyCode == 13 ){
+            return;
+        }
+        if( event.keyCode == 13 ){
+            editor.txt.html('');
+            return;
+        }
     });
 </script>
 

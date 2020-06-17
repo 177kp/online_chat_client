@@ -133,14 +133,16 @@ footer {
     overflow: hidden;
     text-overflow:ellipsis;
     color:#6b6f7c;
-    line-height:22px;
+    line-height:20px;
     margin-left:5px;
     width:160px;
     white-space: nowrap;
     max-height: 20px;
     overflow: hidden;
 }
-
+.list .last-msg img[data-w-e]{
+    height:18px
+}
 .list .last-msg-time{
     position:absolute;
     right:5px;
@@ -589,4 +591,7 @@ footer {
 }
 .name-offline{
     color:#6c6c6c;
+}
+.sessions li.offline{
+    color:#ccc
 }

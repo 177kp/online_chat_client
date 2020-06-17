@@ -43,6 +43,14 @@
         }else{
             this.is_tmp = config.is_tmp;
         }
+        //会话列表滚动到顶部方法
+        if( typeof config.sle_scroll_top == 'function' ){
+            this.sle_scroll_top = config.sle_scroll_top;
+        }else{
+            this.sle_scroll_top = function(){
+
+            };
+        }
         //websocket的访问token
         this.wesocket_access_token = '';
         //websocket服务的地址，该地址是由调用接口/index.php/online_chat/chat/getWebsocketAccessToken返回的
@@ -188,14 +196,15 @@
                 messages: [],
                 name: chatStorage.contacts[contactIndex].name,
                 to_id: chatStorage.contacts[contactIndex].to_id,
-                uid: self.userinfo.uid
+                uid: self.userinfo.uid,
+                online:0
             });
             chatStorage.session = chatStorage.sessions[0];
             chatStorage.sessionIndex = 0;
             var chat_type = chatStorage.contacts[contactIndex].chat_type;
             var to_id = chatStorage.contacts[contactIndex].to_id;
             this.httpApi.joinSession(chat_type,to_id,function(){
-                
+
             });
             typeof cb == 'function' && cb(chatStorage.session);
         },
@@ -482,7 +491,17 @@
                 }
             }
             if( exist == 1 ){
-                var session = chatStorage.sessions.splice(i,1)[0];
+                if( i > 0 ){
+                    var session = chatStorage.sessions.splice(i,1)[0];
+                    chatStorage.sessions.unshift(session);
+                    if( i == chatStorage.sessionIndex ){
+                        chatStorage.sessionIndex = 0;
+                        self.sle_scroll_top();
+                    }else if( i > chatStorage.sessionIndex ){
+                        chatStorage.sessionIndex++;
+                    }
+                    
+                }
             }else{
                 var session = {
                     chat_type: msg.chat_type,
@@ -497,8 +516,8 @@
                 };
                 Vue.set( chatStorage.sessions,chatStorage.sessions.length,session );
                 session = chatStorage.sessions.pop();
+                chatStorage.sessions.unshift(session);
             }
-            chatStorage.sessions.unshift(session);
         },
         //有新的用户等待咨询客服
         waitCustomerJoinTopic:function waitCustomerJoinTopic(msg){
@@ -635,6 +654,15 @@
             this.httpGet(self.httpApiHost+'/index.php/online_chat/session/joinSession',{chat_type:chat_type,to_id:to_id},function(data){
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
+                var chatStorage = self.getChatStorage(chat_type);
+                if( chat_type != self.CHAT_TYPE_GROUP_CHAT){
+                    for( var i=0;i<chatStorage.sessions.length;i++ ){
+                        if( chatStorage.sessions[i].to_id == to_id ){
+                            chatStorage.sessions[i].online = data.data.online;
+                            break;
+                        }
+                    }
+                }
                 if( chat_type == self.CHAT_TYPE_GROUP_CHAT || chat_type == self.CHAT_TYPE_CUSTOMER ){
                     onlineChat.httpApi.getMessages(to_id,chat_type);
                 }
