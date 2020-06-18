@@ -755,3 +755,6 @@ div{
     padding:0 0.2rem;
     font-size:0.4rem
 }
+.sessions li.offline{
+    color:#666
+}

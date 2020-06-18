@@ -74,7 +74,7 @@
                             <img class="cm-avatar" width="30" height="30" :src="item.head_img" />
                             <!--文本-->
                             <div v-if="item.msg_type==0" class="cm-msg cm-txt cm-bg-color">
-                                <pre>{{item.msg}}</pre>
+                                {{item.msg}}
                             </div>
                             <!--富文本-->
                             <div v-if="item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">

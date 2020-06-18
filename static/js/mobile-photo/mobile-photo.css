@@ -1,0 +1,27 @@
+/*基于layer的photo修改的，用于移动端*/
+.layui-layer-photos{
+    top:0 !important
+}
+.layui-layer-content{
+    height:auto !important;
+    top:0 !important
+}
+.layui-layer-phimg img{
+    max-width:100%;
+    width:auto !important;
+    height:auto !important;
+}
+.layui-layer-move{
+    display:none !important;
+}
+#layui-layer-photos,.layui-layer-shade{
+    touch-action: none; 
+}
+.layui-layer-photos{
+    background-color:inherit !important;
+    box-shadow:none !important;
+}
+.layui-layer-imgbar{
+    display:block !important;
+    background:inherit !important
+}

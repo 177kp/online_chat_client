@@ -655,10 +655,13 @@
                 data = $.parseJSON(data);
                 self.debug && console.log(data);
                 var chatStorage = self.getChatStorage(chat_type);
-                if( chat_type != self.CHAT_TYPE_GROUP_CHAT){
-                    for( var i=0;i<chatStorage.sessions.length;i++ ){
-                        if( chatStorage.sessions[i].to_id == to_id ){
+                for( var i=0;i<chatStorage.sessions.length;i++ ){
+                    if( chatStorage.sessions[i].to_id == to_id && chatStorage.sessions[i].chat_type == chat_type ){
+                        if( chat_type != self.CHAT_TYPE_GROUP_CHAT){
                             chatStorage.sessions[i].online = data.data.online;
+                            break;
+                        }else{
+                            chatStorage.sessions[i].online = 1;
                             break;
                         }
                     }
