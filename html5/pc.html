@@ -62,7 +62,7 @@
                 {{onlineChat.chat.session.name}}
             </div>
             <div class="chat-message" id="chat-message">
-                <ul v-if="onlineChat.chat.session" style="height:380px" v-scroll-bottom="onlineChat.chat.session.messages">
+                <ul v-if="onlineChat.chat.session" style="height:360px" v-scroll-bottom="onlineChat.chat.session.messages">
                     <li v-for="(item,key) in onlineChat.chat.session.messages" class="cm-item">
                         <!--时间-->
                         <p class="cm-time" v-if="key==0 || item.ctime-onlineChat.chat.session.messages[key-1].ctime > 60" >
@@ -215,7 +215,7 @@
                 }
             }
         },
-        mounted:function(){
+        mounted:function(){ 
             this.$nextTick(function () {
                 // Code that will run only after the
                 // entire view has been rendered
@@ -249,7 +249,11 @@
             msg:message,
             msg_type:msg_type
         });
-        editor.txt.html('');
+        if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+            editor.txt.html('<p></p>');
+        }else{
+            editor.txt.html('<p><br></p>');
+        }
     }
     $(function(){
         $('.list').slimScroll({
@@ -356,23 +360,19 @@
         });
         $('#upload').html($('#upload').html());
     });
-    $('#editor').keydown(function(event){
+    $('.w-e-text').keydown(function(event){
         if( event.ctrlKey && event.keyCode == 13 ){
-            editor.txt.html(editor.txt.html()+'<p><br/></p>');
-            return;
+            if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+                editor.txt.append('<p></p>');
+                return false;
+            }else{
+                editor.txt.append('<p><br></p>');
+                return false;
+            }
         }
         if( event.keyCode == 13 ){
             sendMsg();
-            editor.txt.html('');
-            return;
-        }
-    }).keyup( function(event){
-        if( event.ctrlKey && event.keyCode == 13 ){
-            return;
-        }
-        if( event.keyCode == 13 ){
-            editor.txt.html('');
-            return;
+            return false;
         }
     });
 </script>
