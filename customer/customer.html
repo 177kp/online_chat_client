@@ -37,9 +37,9 @@
                 </span>
             </div>
             <div class="list">
-                <ul class="sessions" v-show="sideTab=='session'?true:false">
-                    <li v-for="(item,key) in onlineChat.customer.sessions" :class="onlineChat.customer.sessionIndex == key ? 'active':''" @click="onlineChat.selectSession(key,onlineChat.CHAT_TYPE_CUSTOMER)">
-                        <img class="avatar"  src="../static/img/user.png"> 
+                <ul class="sessions" v-show="sideTab=='session'?true:false"> 
+                    <li v-for="(item,key) in onlineChat.customer.sessions" :class="{active:onlineChat.customer.sessionIndex == key,online:item.online,offline:!item.online}" @click="onlineChat.selectSession(key,onlineChat.CHAT_TYPE_CUSTOMER)">
+                        <img class="avatar"  :src="item.online?'../static/img/user.png':'../static/img/user.gray.png'"> 
                         <div>
                             <p class="name">匿名用户{{item.to_id}}</p>
                             <p class="last-msg" v-html="last_msg( item.lastMessage )"></p>
@@ -73,12 +73,16 @@
                         <div :class="{self:item.uid == onlineChat.userinfo.uid}">
                             <!--头像-->
                             <img class="cm-avatar" width="30" height="30" :src="item.uid == onlineChat.userinfo.uid ? '../static/img/customer.png' : '../static/img/user.png'" />
-                            <!--文本，富文本-->
-                            <div v-if="item.msg_type==0 || item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
+                            <!--文本-->
+                            <div v-if="item.msg_type==0" class="cm-msg cm-txt cm-bg-color">
+                                {{item.msg}}
+                            </div>
+                            <!--富文本-->
+                            <div v-if="item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
                             </div>
                             <!--图片-->
                             <div v-if="item.msg_type==1" class="cm-msg cm-img">
-                                <img :src="item.msg" />
+                                <img :src="item.msg" :onload="imgLoadScrollBottom()" />
                             </div>
                             <!--声音-->
                             <div v-if="item.msg_type==2" class="cm-msg cm-bg-color cm-sound" :sound-src="item.msg.path" :style="{width:parseInt(70+(item.msg.duration * 5)).toString() + 'px'}">
@@ -88,7 +92,7 @@
                             </div>
                             <!--视频-->
                             <div v-if="item.msg_type==3" class="cm-msg cm-video" :video-src="item.msg.path">
-                                <img :src="onlineChat.httpApiHost+item.msg.video_cover_img"  class="video-cover-img" />
+                                <img :src="onlineChat.httpApiHost+item.msg.video_cover_img"  class="video-cover-img" :onload="imgLoadScrollBottom()" />
                                 <img src="../static/img/play.png" class="video-play-img"/>
                             </div>
                             <!--文件-->
@@ -168,18 +172,22 @@
                     }else if( message.msg_type == onlineChat.MSG_TYPE_FILE ){
                         msg = '[文件]';
                     }
-                    if( message.uid != onlineChat.userinfo.uid ){
-                        if( message.msg_type == onlineChat.MSG_TYPE_RICH_TXT ){
-                            return '<p>[' + message.name + ']:' + msg.substr(3);
-                        }else{
-                            return '[<span>'+message.name+'</span>]：' + msg;
-                        }
+                    if( message.msg_type == onlineChat.MSG_TYPE_RICH_TXT ){
+                        return '<p>[' + message.name + ']:' + msg;
                     }else{
-                        return msg;
+                        return '[<span>'+message.name+'</span>]：' + msg;
                     }
                 }else{
                     return '';
                 }
+            },
+            imgLoadScrollBottom:function(){
+                setTimeout(function(){
+                    var elem = document.getElementById('chat-message');
+                    var scrollTop = elem.scrollHeight - elem.clientHeight;
+                    $(elem).slimScroll({ scrollTo: scrollTop.toString() + 'px' });
+                    elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+                },100);
             }
         },
         computed:{
@@ -217,7 +225,8 @@
             return;
         }
         var message = editor.txt.html();
-        if( /<img[^>]*>/.test( message ) ){
+        var lines = editor.txt.getJSON();
+        if( /<img[^>]*>/.test( message ) || /<br\/>/.test(message) || lines.length > 1){
             var message = editor.txt.html();
             var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
         }else{
@@ -233,14 +242,18 @@
             msg:message,
             msg_type:msg_type
         });
-        editor.txt.html('');
+        if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+            editor.txt.html('<p></p>');
+        }else{
+            editor.txt.html('<p><br></p>');
+        }
     }
     $(function(){
         $('.list').slimScroll({
             height: '460px'
         });
         $('.chat-message').slimScroll({
-            height: '370px'
+            height: '360px'
         });
         $('.w-e-text').slimScroll({
             height: '90px'
@@ -285,15 +298,15 @@
     $('body').on('click','.cm-img img',function(){
         var index = 0;
         var imgs = [];
-        for( var i=0;i<onlineChat.chat.session.messages.length;i++ ){
-            if( onlineChat.chat.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
-                if( onlineChat.chat.session.messages[i].msg == $(this).attr('src') ){
+        for( var i=0;i<onlineChat.customer.session.messages.length;i++ ){
+            if( onlineChat.customer.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( onlineChat.customer.session.messages[i].msg == $(this).attr('src') ){
                     index = imgs.length;
                 }
                 imgs.push({
                     "alt": "",
                     "pid": i, //图片id
-                    "src": onlineChat.chat.session.messages[i].msg, //原图地址
+                    "src": onlineChat.customer.session.messages[i].msg, //原图地址
                     "thumb": "" //缩略图地址
                 });
             }
@@ -339,6 +352,21 @@
             chat_type:onlineChat.customer.session.chat_type
         });
         $('#upload').html($('#upload').html());
+    });
+    $('.w-e-text').keydown(function(event){
+        if( event.ctrlKey && event.keyCode == 13 ){
+            if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+                editor.txt.append('<p></p>');
+                return false;
+            }else{
+                editor.txt.append('<p><br></p>');
+                return false;
+            }
+        }
+        if( event.keyCode == 13 ){
+            sendMsg();
+            return false;
+        }
     });
 </script>
 

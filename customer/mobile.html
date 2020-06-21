@@ -13,8 +13,10 @@
     <script type="text/javascript" src="../static/js/vconsole.min.js"></script>
     <script type="text/javascript" src="../static/js/wangEditor/wangEditor_modify.min.js"></script>
     <script type="text/javascript" src="../static/js/face.js"></script>
-    <script type="text/javascript" src="../static/js/layer/layer.js"></script>
-    <link rel="stylesheet" href="../static/css/mobile.css"> 
+    <script type="text/javascript" src="../static/js/layer/layer.js"></script> 
+    <script type="text/javascript" src="../static/js/mobile-photo/mobile-photo.js"></script>
+    <link rel="stylesheet" href="../static/css/mobile.css">
+    <link rel="stylesheet" href="../static/js/mobile-photo/mobile-photo.css">
 </head>
 
 <body>
@@ -76,7 +78,7 @@
                         </div>
                         <div class="text-content">
                             <div id="chat-tool-bar">
-                                <div name="msg" placeholder="请输入内容" id="editor" @keyup.enter="sendMsg()"></div>
+                                <div name="msg" placeholder="请输入内容" id="editor"></div>
                             </div>
                             <div class="file-tool-bar" v-show="$store.state.fileToolShow">
                                 <div class="ftb-item">
@@ -130,11 +132,16 @@
     const mainHtml= Vue.component('my-component', {
         template: '#main',
         methods:{
-            goBack(){
+            goBack:function(){
                 this.$router.push('/');
             },
-            sendMsg(){
+            sendMsg:function(){
                 sendMsg();
+            },
+            imgLoadScrollBottom:function(obj){
+                setTimeout(function(){
+                    $('.chat-message').scrollTop(10000000);
+                },50);
             }
         },
         directives: {
@@ -328,24 +335,26 @@
             file:file,
             chat_type:onlineChat.customer.session.chat_type
         });
+        var nf = $('<input type="file" name="'+$(obj).attr('name')+'" onchange="'+$(obj).attr('onchange')+'" />')[0];
+        //console.log(nf);
+        obj.parentNode.replaceChild(nf, obj );
     }
     $('body').on('click','.cm-img img',function(){
         var index = 0;
         var imgs = [];
-        for( var i=0;i<store.state.session.messages.length;i++ ){
-            if( store.state.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
-                if( store.state.session.messages[i].msg == $(this).attr('src') ){
+        for( var i=0;i<onlineChat.customer.session.messages.length;i++ ){
+            if( onlineChat.customer.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( onlineChat.customer.session.messages[i].msg == $(this).attr('src') ){
                     index = imgs.length;
                 }
                 imgs.push({
                     "alt": "",
                     "pid": i, //图片id
-                    "src": store.state.session.messages[i].msg, //原图地址
+                    "src": onlineChat.customer.session.messages[i].msg, //原图地址
                     "thumb": "" //缩略图地址
                 });
             }
         }
-        //console.log(imgs);
         layer.photos({
             photos: {
                 "title": "", //相册标题
@@ -354,7 +363,7 @@
                 "data":imgs
             }
             ,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
-            ,shade: [0.9,'#000']
+            ,shade: [0.8,'#000']
             ,area:['100%','auto']
             ,closeBtn:true
         });

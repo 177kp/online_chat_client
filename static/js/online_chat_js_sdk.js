@@ -634,7 +634,7 @@
                         lastMessage:null,
                         last_time:0,
                         messages:[],
-                        online:1,
+                        online:data.data.online,
                         to_id:to_id,
                         chat_type:onlineChat.CHAT_TYPE_CUSTOMER
                     };
