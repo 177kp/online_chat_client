@@ -14,7 +14,7 @@
     <script type="text/javascript" src="../static/js/layer/layer.js"></script>
     <link rel="stylesheet" href="../static/css/index.css">
 </head>
-<body style="background:#f5f5f5 url('../static/  /bg.jpg') no-repeat center;background-size: cover;">
+<body style="background:#f5f5f5 url('../static/img/bg.jpg') no-repeat center;background-size: cover;">
     <div id="app" >
         <div class="sidebar">
             <div class="card">
@@ -33,7 +33,7 @@
             </div>
             <div class="list">
                 <ul class="sessions" v-show="sideTab=='session'?true:false">
-                    <li v-for="(item,key) in onlineChat.consult.sessions" :class="onlineChat.consult.sessionIndex == key ? 'active':''" @click="selectSession(key)">
+                    <li v-for="(item,key) in onlineChat.consult.sessions" :class="{active:onlineChat.chat.sessionIndex == key,online:item.online,offline:!item.online}" @click="selectSession(key)">
                         <img class="avatar"  :src="onlineChat.helper.getHeadImg(item.head_img,item.online)"> 
                         <div>
                             <p class="name">{{item.name}}</p>
@@ -55,7 +55,7 @@
                 <span >{{consult_status}}</span>
             </div>
             <div class="chat-message" id="chat-message">
-                <ul v-if="onlineChat.consult.session"  v-scroll-bottom="onlineChat.consult.session.messages">
+                <ul v-if="onlineChat.consult.session" >
                     <li v-for="(item,key) in onlineChat.consult.session.messages" class="cm-item">
                         <!--时间-->
                         <p class="cm-time" v-if="key==0 || item.ctime-onlineChat.consult.session.messages[key-1].ctime > 60" >
@@ -65,8 +65,12 @@
                         <div :class="{self:item.uid == onlineChat.userinfo.uid}">
                             <!--头像-->
                             <img class="cm-avatar" width="30" height="30" :src="item.head_img" />
-                            <!--文本，富文本-->
-                            <div v-if="item.msg_type==0 || item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
+                            <!--文本-->
+                            <div v-if="item.msg_type==0" class="cm-msg cm-txt cm-bg-color">
+                                {{item.msg}}
+                            </div>
+                            <!--富文本-->
+                            <div v-if="item.msg_type==4" class="cm-msg cm-txt cm-bg-color" v-html="item.msg">
                             </div>
                             <!--图片-->
                             <div v-if="item.msg_type==1" class="cm-msg cm-img">
@@ -249,7 +253,8 @@
             return;
         }
         var message = editor.txt.html();
-        if( /<img[^>]*>/.test( message ) ){
+        var lines = editor.txt.getJSON();
+        if( /<img[^>]*>/.test( message ) || /<br\/>/.test(message) || lines.length > 1){
             var message = editor.txt.html();
             var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
         }else{
@@ -265,7 +270,11 @@
             msg:message,
             msg_type:msg_type
         });
-        editor.txt.html('');
+        if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+            editor.txt.html('<p></p>');
+        }else{
+            editor.txt.html('<p><br></p>');
+        }
     }
     $(function(){
         $('.list').slimScroll({
@@ -387,6 +396,37 @@
             }
         }
     },1000);
+    $('.w-e-text').keydown(function(event){
+        if( event.ctrlKey && event.keyCode == 13 ){
+            if( navigator.userAgent.indexOf("Edge") > -1 || 'ActiveXObject' in window ){ //IE浏览器和edge浏览器
+                editor.txt.append('<p></p>');
+                return false;
+            }else{
+                editor.txt.append('<p><br></p>');
+                return false;
+            }
+        }
+        if( event.keyCode == 13 ){
+            sendMsg();
+            return false;
+        }
+    });
+    var mutationObserver = new MutationObserver(function(mutations) {
+        setTimeout(function(){
+            var elem = document.getElementById('chat-message');
+            var scrollTop = elem.scrollHeight - elem.clientHeight;
+            $(elem).slimScroll({ scrollTo: scrollTop.toString() + 'px' });
+            elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+        },100);
+    });
+    mutationObserver.observe($('.chat-message')[0], {
+        attributes: true,
+        characterData: true,
+        childList: true,
+        subtree: true,
+        attributeOldValue: true,
+        characterDataOldValue: true
+    });
 </script>
 
 </html>

@@ -14,7 +14,9 @@
     <script type="text/javascript" src="../static/js/wangEditor/wangEditor_modify.min.js"></script>
     <script type="text/javascript" src="../static/js/face.js"></script>
     <script type="text/javascript" src="../static/js/layer/layer.js"></script>
-    <link rel="stylesheet" href="../static/css/mobile.css"> 
+    <script type="text/javascript" src="../static/js/mobile-photo/mobile-photo.js"></script>
+    <link rel="stylesheet" href="../static/css/mobile.css">
+    <link rel="stylesheet" href="../static/js/mobile-photo/mobile-photo.css"> 
 </head>
 <style type="text/css">
 .chat-message{
@@ -32,7 +34,7 @@
             <div class="list">
                 <ul class="sessions">
                     <li v-for="(item,key) in $store.state.onlineChat.consult.sessions" 
-                        @click="goto(item)" @touchend="">
+                        @click="goto(item)" @touchend="" :class="{online:item.online,offline:!item.online}">
                         <div class="cols-2">
                             <img class="avatar" :src="$store.state.onlineChat.helper.getHeadImg(item.head_img,item.online)">
                         </div>
@@ -543,10 +545,14 @@
             return;
         }
         var message = editor.txt.html();
+        var lines = editor.txt.getJSON();
         if( /<img[^>]*>/.test( message ) ){
             message = editor.txt.html();
             var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
             message = message.substr(0,message.length-8) + '</p>';
+        }else if( /<br\/>/.test(message) || lines.length > 1 ){
+            var message = editor.txt.html();
+            var msg_type = onlineChat.MSG_TYPE_RICH_TXT;
         }else{
             message = editor.txt.text();
             var msg_type = onlineChat.MSG_TYPE_TXT;
@@ -632,19 +638,22 @@
             file:file,
             chat_type:onlineChat.consult.session.chat_type
         });
+        var nf = $('<input type="file" name="'+$(obj).attr('name')+'" onchange="'+$(obj).attr('onchange')+'" />')[0];
+        //console.log(nf);
+        obj.parentNode.replaceChild(nf, obj);
     }
     $('body').on('click','.cm-img img',function(){
         var index = 0;
         var imgs = [];
-        for( var i=0;i<store.state.session.messages.length;i++ ){
-            if( store.state.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
-                if( store.state.session.messages[i].msg == $(this).attr('src') ){
+        for( var i=0;i<onlineChat.consult.session.messages.length;i++ ){
+            if( onlineChat.consult.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
+                if( onlineChat.consult.session.messages[i].msg == $(this).attr('src') ){ 
                     index = imgs.length;
                 }
                 imgs.push({
                     "alt": "",
                     "pid": i, //图片id
-                    "src": store.state.session.messages[i].msg, //原图地址
+                    "src": onlineChat.consult.session.messages[i].msg, //原图地址
                     "thumb": "" //缩略图地址
                 });
             }
@@ -658,7 +667,7 @@
                 "data":imgs
             }
             ,anim: 5 //0-6的选择，指定弹出图片动画类型，默认随机
-            ,shade: [0.9,'#000']
+            ,shade: [0.8,'#000']
             ,area:['100%','auto']
             ,closeBtn:true
         });
