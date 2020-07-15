@@ -14,7 +14,6 @@
     <script type="text/javascript" src="../static/js/wangEditor/wangEditor_modify.min.js"></script>
     <script type="text/javascript" src="../static/js/face.js"></script>
     <script type="text/javascript" src="../static/js/layer/layer.js"></script>
-    <script type="text/javascript" src="../static/js/layer/layer.js"></script>
     <script type="text/javascript" src="../static/js/mobile-photo/mobile-photo.js"></script>
     <link rel="stylesheet" href="../static/css/mobile.css">
     <link rel="stylesheet" href="../static/js/mobile-photo/mobile-photo.css">
@@ -526,7 +525,7 @@
         var imgs = [];
         for( var i=0;i<onlineChat.chat.session.messages.length;i++ ){
             if( onlineChat.chat.session.messages[i].msg_type == onlineChat.MSG_TYPE_IMG ){
-                if( onlineChat.chat.session.messages[i].msg == $(this).attr('src') ){
+                if( onlineChat.chat.session.messages[i].msg == $(this).attr('src') ){ 
                     index = imgs.length;
                 }
                 imgs.push({

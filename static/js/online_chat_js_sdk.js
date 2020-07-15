@@ -79,6 +79,14 @@
         //咨询
         this.CHAT_TYPE_CONSULT = 3;
 
+        //MSG_TMP_*是用户客服咨询的
+        //发送方和接收方都不是临时用户
+        this.MSG_TMP_NONE = 0;
+        //发送方是临时用户
+        this.MSG_TMP_SENDER = 1;
+        //接收方是临时用户
+        this.MSG_TMP_RECEIVER = 2;
+
         //普通聊天
         this.chat = {
             //所有聊天会话
@@ -373,6 +381,18 @@
                 msg_type:message.msg_type,
                 msg:message.msg
             }
+            if( message.chat_type == 2 ){
+                if( typeof self.userinfo.tmp != 'undefined' && self.userinfo.tmp == 1 ){
+                    var msgTmp = self.MSG_TMP_SENDER;
+                }else{
+                    if( typeof message.tmp != 'undefined' ){
+                        var msgTmp = message.tmp;
+                    }else{
+                        var msgTmp = self.MSG_TMP_RECEIVER;
+                    }
+                }
+                msg['tmp'] = msgTmp;
+            }
             //console.log(msg);
             msg = JSON.stringify(msg);
             self.debug && console.log("发送消息：" + msg);
@@ -620,6 +640,7 @@
                     self.userinfo.uid = data.data.userinfo.uid;
                     self.userinfo.name = data.data.userinfo.name;
                     self.userinfo.head_img = data.data.userinfo.head_img;
+                    self.userinfo.tmp = data.data.userinfo.tmp;
                     self.wesocket_access_token = data.data.wesocket_access_token;
                     self.ws_addr = data.data.ws_addr;
                     if( data.data.to_id == '' ){
